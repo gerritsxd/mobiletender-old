@@ -55,7 +55,19 @@ class BasketController extends Controller
         $this->footer = "Pedido por:" .$ticket->m_User->m_sName;
 
         for($prinernr = 1 ;$prinernr <= config('app.nr-of-printers');$prinernr++){
-            $toprint = collect($unprintedTicetLines)->where('attributes.product.printer', $prinernr)->all();
+            $toprint = collect($unprintedTicetLines)
+                ->filter(function ($line) use ($prinernr) {
+                    $printTarget = data_get($line, 'attributes.product.printto');
+                    if ($printTarget === null) {
+                        $printTarget = data_get($line, 'attributes.product.printer');
+                    }
+                    if ($printTarget === null && isset($line->attributes) && is_object($line->attributes) && isset($line->attributes->{'product.printer'})) {
+                        $printTarget = $line->attributes->{'product.printer'};
+                    }
+                    return (int) $printTarget === (int) $prinernr;
+                })
+                ->values()
+                ->all();
 
             if (!empty($toprint) && $this->sendLinesToSelectedPrinter($header, $toprint, $prinernr)) {
                 $printedAny = true;
