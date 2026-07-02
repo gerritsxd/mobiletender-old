@@ -143,17 +143,20 @@ class OrderController extends Controller
     public function catalogJson()
     {
         $products = Cache::remember('catalog_products_json', 60, function () {
+            // NB: $product->category is the raw id COLUMN (it shadows the
+            // relation of the same name), so resolve names via a map.
+            $categoryNames = Category::pluck('name', 'id');
+
             return Product::whereHas('product_cat')
-                ->with('category')
                 ->orderBy('name')
                 ->get()
-                ->map(function (Product $product) {
+                ->map(function (Product $product) use ($categoryNames) {
                     return [
                         'id' => $product->id,
                         'name' => $product->name,
                         'price' => round(((float) $product->pricesell) * 1.1, 2),
-                        'category' => $product->category ? $product->category->name : null,
-                        'category_id' => $product->category ? $product->category->id : null,
+                        'category' => $categoryNames[$product->category] ?? null,
+                        'category_id' => $product->category,
                     ];
                 })->values()->all();
         });
