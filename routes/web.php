@@ -58,7 +58,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/order/admincancelproduct/{id}', [OrderController::class, 'admincancelproduct']);
 
 
-    Route::get('/checkout/', [BasketController::class, 'checkout'])->name('checkout');
+    // Checkout lives in the basket (BasketController::checkout was removed);
+    // keep the URL working instead of 500ing.
+    Route::get('/checkout/', fn () => redirect()->route('basket'))->name('checkout');
     Route::get('/checkout/pickup', [BasketController::class, 'setPickUpId']);
     Route::get('/checkout/pay', [BasketController::class, 'pay'])->name('pay');
     Route::get('/checkout/payed', [BasketController::class, 'payed'])->name('payed');
