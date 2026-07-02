@@ -16,7 +16,7 @@
                 </span>
             @endif
         </div>
-        <div class="flex flex-shrink-0 items-center gap-2">
+        <div class="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <a id="basketLink" href="{{ url('/basket') }}" class="relative inline-flex" aria-label="{{ __('Cuenta') }}">
                 <span
                     class="btn-tab relative inline-flex min-h-[2.5rem] items-center gap-1.5 px-3 py-2 text-sm"
