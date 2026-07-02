@@ -12,6 +12,8 @@ use Tests\TestCase;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Unicenta\UnicentaSharedTicketController;
 use App\Traits\SharedTicketTrait;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 
 class OrderControllerTest extends TestCase
@@ -21,9 +23,9 @@ class OrderControllerTest extends TestCase
     public function testAddProduct(){
         $orderController = new OrderController();
         $orderController->saveEmptyTicket($orderController->createEmptyTicket(),'1234');
-        $this->withSession(['ticketID'=>'1234']);
+        Session::put('ticketID', '1234');
         self::assertEquals(0,count($orderController->getTicket('1234')->m_aLines));
-        $orderController->addProduct(self::PRODUCT_ID);
+        $orderController->addProduct(new Request(), self::PRODUCT_ID);
         self::assertEquals(1,count($orderController->getTicket('1234')->m_aLines));
 
     }
@@ -39,7 +41,9 @@ class OrderControllerTest extends TestCase
 public function testCreateSession(){
     $orderController = new OrderController();
     $orderController->checkForSessionTicketId();
-
+    self::assertNotNull(Session::get('ticketID'));
+    // Clean up the ticket the session check created.
+    $orderController->clearOpenTableTicket(Session::get('ticketID'));
 }
 
 

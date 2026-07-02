@@ -76,7 +76,9 @@ async function captureServerOrder(orderId, csrfToken) {
         },
     });
     if (!res.ok) {
-        throw new Error('capture failed: ' + res.status);
+        const err = new Error('capture failed: ' + res.status);
+        err.status = res.status;
+        throw err;
     }
     return res.json();
 }
@@ -360,6 +362,11 @@ export async function initPayPalCheckout(opts) {
     };
     const onError = (err) => {
         console.error('Payment error', err);
+        if (err && err.status === 409) {
+            alert('Tu pedido ha cambiado desde que empezaste a pagar. Revisa el importe y vuelve a intentarlo.');
+            window.location.reload();
+            return;
+        }
         alert('No se pudo completar el pago. Intenta otro método.');
     };
 

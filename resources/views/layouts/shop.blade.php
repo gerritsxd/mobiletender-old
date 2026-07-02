@@ -16,6 +16,9 @@
 
 @include('partials.shop.topbar')
 
+{{-- Live flash offer banners (filled by resources/js/shop/flash-offers.js) --}}
+<div id="flash-offer-root" class="pointer-events-none fixed inset-x-0 top-14 z-40 mx-auto max-w-md space-y-2 px-3"></div>
+
 <main class="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
     @include('partials.shop.flash')
     @yield('content')

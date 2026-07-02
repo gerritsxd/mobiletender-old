@@ -7,7 +7,7 @@
  */
 namespace Tests\Unit;
 use Tests\TestCase;
-use App\Category;
+use App\Models\UnicentaModels\Category;
 use App\Models\UnicentaModels\Product;
 use App\Models\UnicentaModels\Products_Cat;
 use App\Models\UnicentaModels\SharedTicket;
@@ -22,7 +22,7 @@ class ModelsTest extends TestCase
 
     public function testSharedTicketUser(){
         $sharedTicketUser = new SharedTicketUser();
-        self::assertTrue($sharedTicketUser->m_sName == 'app');
+        self::assertTrue($sharedTicketUser->m_sName == 'Guest');
     }
 
     public function testSharedTicket(){

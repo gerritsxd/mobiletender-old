@@ -251,8 +251,138 @@ parameters:
 			path: app/Http/Controllers/CategoryController.php
 
 		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$ends_at\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$flash_price\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$message\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$product_id\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$title\\.$#"
+			count: 2
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$name\\.$#"
+			count: 3
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\FlashOffer\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\FlashOffer\\:\\:findOrFail\\(\\)\\.$#"
+			count: 3
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\FlashOffer\\:\\:live\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\FlashOffer\\:\\:whereNotIn\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:find\\(\\)\\.$#"
+			count: 3
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:orderBy\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/FlashOfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$final_price\\.$#"
+			count: 1
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$id\\.$#"
+			count: 6
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$name\\.$#"
+			count: 1
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$offerProducts\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
 			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$name\\.$#"
 			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\Offer\\:\\:findOrFail\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\OfferProduct\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\OfferProduct\\:\\:where\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Category\\:\\:orderByRaw\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:find\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:orderBy\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Cannot access property \\$name on array\\<Illuminate\\\\Database\\\\Eloquent\\\\Builder\\>\\|Illuminate\\\\Database\\\\Eloquent\\\\Builder\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\|Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Http/Controllers/OfferController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$name\\.$#"
+			count: 2
+			path: app/Http/Controllers/OrderController.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:isManager\\(\\)\\.$#"
+			count: 1
 			path: app/Http/Controllers/OrderController.php
 
 		-
@@ -284,6 +414,21 @@ parameters:
 			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:where\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/OrderController.php
+
+		-
+			message: "#^Offset 0 on array\\{\\} on left side of \\?\\? does not exist\\.$#"
+			count: 1
+			path: app/Http/Controllers/OrderController.php
+
+		-
+			message: "#^Offset null on array\\{\\} on left side of \\?\\? does not exist\\.$#"
+			count: 1
+			path: app/Http/Controllers/OrderController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$name\\.$#"
+			count: 2
+			path: app/Http/Controllers/PayPalController.php
 
 		-
 			message: "#^Method App\\\\Http\\\\Controllers\\\\ProductAdOnController\\:\\:create\\(\\) should return Illuminate\\\\Http\\\\Response but return statement is missing\\.$#"
@@ -626,6 +771,21 @@ parameters:
 			path: app/Http/Middleware/VerifyCsrfToken.php
 
 		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$active\\.$#"
+			count: 1
+			path: app/Models/FlashOffer.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$ends_at\\.$#"
+			count: 2
+			path: app/Models/FlashOffer.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\FlashOffer\\:\\:\\$starts_at\\.$#"
+			count: 1
+			path: app/Models/FlashOffer.php
+
+		-
 			message: "#^Constructor of class App\\\\Models\\\\UnicentaModels\\\\SharedTicket has an unused parameter \\$attributes\\.$#"
 			count: 1
 			path: app/Models/UnicentaModels/SharedTicket.php
@@ -679,3 +839,13 @@ parameters:
 			message: "#^PHPDoc tag @var does not specify variable name\\.$#"
 			count: 1
 			path: app/Providers/RouteServiceProvider.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$name\\.$#"
+			count: 2
+			path: app/Services/ShopBasketData.php
+
+		-
+			message: "#^Call to static method get\\(\\) on an unknown class Session\\.$#"
+			count: 2
+			path: app/Services/ShopBasketData.php

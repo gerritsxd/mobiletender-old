@@ -45,7 +45,8 @@ class BasketController extends Controller
 
         $ticket = $this->getTicket($ticketID);
         $unprintedTicetLines = $this->getUnprintedTicetLines($ticket);
-        $printedAny = false;
+        $printedLines = [];
+        $anyPrinterFailed = false;
 
         if($ticketID > 100){
             $header = "NrPedido: " . $ticketID;
@@ -69,12 +70,17 @@ class BasketController extends Controller
                 ->values()
                 ->all();
 
-            if (!empty($toprint) && $this->sendLinesToSelectedPrinter($header, $toprint, $prinernr)) {
-                $printedAny = true;
+            if (empty($toprint)) {
+                continue;
+            }
+            if ($this->sendLinesToSelectedPrinter($header, $toprint, $prinernr)) {
+                $printedLines = array_merge($printedLines, $toprint);
+            } else {
+                $anyPrinterFailed = true;
             }
         }
 
-        if (!$printedAny) {
+        if (empty($printedLines)) {
             Session::flash('error', 'No se ha podido imprimir el ticket. Por favor avisa a nuestro personal.');
             Log::warning('Order print skipped: no lines matched printer mapping or all printer jobs failed.', [
                 'ticket_id' => $ticketID,
@@ -83,7 +89,20 @@ class BasketController extends Controller
             return redirect()->route('basket');
         }
 
-        $this->setUnprintedTicketLinesAsPrinted($ticket, $ticketID);
+        // Only lines whose own printer succeeded get flagged as printed;
+        // the rest stay pending so they can be re-sent when the printer is back.
+        $this->setTicketLinesAsPrinted($ticket, $ticketID, $printedLines);
+
+        if ($anyPrinterFailed) {
+            Session::flash('error', 'Parte del pedido no se pudo imprimir. Por favor avisa a nuestro personal.');
+            Log::error('Order partially printed: at least one printer failed.', [
+                'ticket_id' => $ticketID,
+                'printed_lines' => count($printedLines),
+                'unprinted_lines' => count($unprintedTicetLines) - count($printedLines),
+            ]);
+            return redirect()->route('basket');
+        }
+
         $this->afterPrintOrderHandling($ticketID);
         return redirect()->route('order');
     }
@@ -110,20 +129,15 @@ class BasketController extends Controller
 
 
     /**
-     * @param $ticket_lines
-     * @return array|null
+     * Marks only the given lines (same object instances from $ticket->m_aLines)
+     * as printed, leaving failed printers' lines pending.
      */
-    private function setUnprintedTicketLinesAsPrinted(SharedTicket $ticket, $ticketID)
+    private function setTicketLinesAsPrinted(SharedTicket $ticket, $ticketID, array $printedLines)
     {
-        $lines_to_print = null;
-        foreach ($ticket->m_aLines as $ticket_line) {
-            if ($ticket_line->attributes->updated) {
-                $lines_to_print[] = $ticket_line;
-                $ticket_line->setPrinted();
-            }
+        foreach ($printedLines as $printedLine) {
+            $printedLine->setPrinted();
         }
         $this->updateOpenTable($ticket, $ticketID);
-        return $lines_to_print;
     }
 
     public function printOrderEfectivo($ticketID)
@@ -145,10 +159,45 @@ class BasketController extends Controller
 
     public function printOrderOnline($ticketID)
     {
-        $this->footer = 'PAGADO online';
-        $this->printOrderAndReceipt($ticketID);
+        // Only a PayPal capture verified server-side may mark a ticket paid online.
+        $proof = Session::get('paypal_capture_proof');
+        if (!is_array($proof) || (string) ($proof['ticket'] ?? '') !== (string) $ticketID) {
+            Log::warning('printOrderOnline without capture proof', [
+                'ticket_id' => $ticketID,
+                'session_ticket' => Session::get('ticketID'),
+            ]);
+            Session::flash('error', 'No se ha encontrado un pago confirmado para este pedido.');
+            return redirect()->route('pay');
+        }
 
+        $currentCents = (int) round($this->getSumTicketLines($ticketID) * 1.1 * 100);
+        if ($currentCents !== (int) $proof['amount_cents']) {
+            Log::error('printOrderOnline: ticket total no longer matches captured amount', [
+                'ticket_id' => $ticketID,
+                'ticket_cents' => $currentCents,
+                'captured_cents' => $proof['amount_cents'],
+            ]);
+            Session::flash('error', 'El pedido ha cambiado desde el pago. Por favor avisa a nuestro personal.');
+            return redirect()->route('pay');
+        }
+
+        Session::forget('paypal_capture_proof');
+
+        // Record the sale first: the money is already captured, so a printer
+        // failure must never prevent the receipt from being written.
+        $lines = $this->getTicketLines($ticketID);
         $this->setTicketPayed($ticketID, 'online');
+
+        $this->footer = 'PAGADO online';
+        try {
+            $this->printTicket('Mesa: ' . $ticketID, $lines);
+        } catch (\Throwable $e) {
+            Log::error('printOrderOnline: receipt print failed after payment: ' . $e->getMessage(), [
+                'ticket_id' => $ticketID,
+            ]);
+            Session::flash('error', 'Pago recibido, pero no se pudo imprimir el ticket. Avisa a nuestro personal.');
+        }
+
         Session::flash('status', 'Su cuenta esta pagado');
         return redirect()->route('order');
     }
@@ -184,9 +233,10 @@ class BasketController extends Controller
     }
     public function setPickUpId()
     {
-        $pickup_ID = DB::table('pickup_number')->max('id');
-        $pickup_ID = $pickup_ID + 1;
-        DB::statement("UPDATE pickup_number set id = " . $pickup_ID . ";");
+        // Connection-scoped LAST_INSERT_ID keeps concurrent customers from
+        // being handed the same pickup number (and merged into one ticket).
+        DB::update('UPDATE pickup_number SET id = LAST_INSERT_ID(id + 1)');
+        $pickup_ID = (int) DB::getPdo()->lastInsertId();
         $this->moveTable(Session::get('ticketID'), $pickup_ID);
 
         Session::put('tableNumber', $pickup_ID);

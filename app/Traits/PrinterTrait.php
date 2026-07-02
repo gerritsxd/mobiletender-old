@@ -301,7 +301,8 @@ trait PrinterTrait
     private function printTwoClumnFooter($totalPrice): void
     {
         $this->printer->text("==========================================================\n");
-        $this->printer->text($this->columnify('IVA 10%', number_format($totalPrice * 0.1, 2, ",", ".") . '', 40, 12, 4));
+        // $totalPrice is gross (VAT included): the 10% VAT portion is gross - gross/1.1.
+        $this->printer->text($this->columnify('IVA 10%', number_format($totalPrice - $totalPrice / 1.1, 2, ",", ".") . '', 40, 12, 4));
         $this->printer->setTextSize(2, 2);
         $printtext = $this->columnify("TOTAL", number_format($totalPrice, 2, ",", ".") . "", 18, 12, 4);
         $this->printer->setEmphasis();

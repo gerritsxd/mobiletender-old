@@ -10,6 +10,8 @@
         $nav[] = ['label' => __('Mesas y Pedidos'), 'href' => url('/openorders'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Products'), 'href' => url('/products'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Stock'), 'href' => url('/stockindex'), 'section' => __('Catálogo')];
+        $nav[] = ['label' => __('Ofertas'), 'href' => url('/offers'), 'section' => __('Catálogo')];
+        $nav[] = ['label' => '⚡ ' . __('Ofertas Flash'), 'href' => url('/flashoffers'), 'section' => __('Catálogo')];
     }
     if (Auth::user()->isFinance()) {
         $nav[] = ['label' => __('Cobrar'), 'href' => url('/paypanel'), 'section' => __('Caja')];

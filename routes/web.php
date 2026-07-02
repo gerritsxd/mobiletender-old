@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\AdminStockController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BasketController;
+use App\Http\Controllers\FlashOfferController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PayPalController;
@@ -121,6 +122,17 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/order/offers', [OfferController::class, 'showOffersForOrder'])->name('order.offers');
     Route::get('/order/addoffer/{id}', [OfferController::class, 'addOffer'])->name('order.addoffer');
+
+    // Flash offers: public endpoints for ordering clients
+    Route::get('/flash-offers/poll', [FlashOfferController::class, 'poll'])->middleware('throttle:60,1')->name('flashoffers.poll');
+    Route::post('/order/addflashoffer/{id}', [FlashOfferController::class, 'addToOrder'])->name('flashoffers.add');
+
+    // Flash offers: admin
+    Route::get('/flashoffers', [FlashOfferController::class, 'index'])->middleware('is_manager')->name('flashoffers.index');
+    Route::post('/flashoffers', [FlashOfferController::class, 'store'])->middleware('is_manager')->name('flashoffers.store');
+    Route::post('/flashoffers/{id}/stop', [FlashOfferController::class, 'stop'])->middleware('is_manager')->name('flashoffers.stop');
+    Route::post('/flashoffers/{id}/extend', [FlashOfferController::class, 'extend'])->middleware('is_manager')->name('flashoffers.extend');
+    Route::delete('/flashoffers/{id}', [FlashOfferController::class, 'destroy'])->middleware('is_manager')->name('flashoffers.destroy');
 
     Route::get('/payments/{id}',[AdminPaymentController::class,'pay'])->middleware('is_manager');
     //Route::get('/payed/{id}/{mode}',[AdminPaymentController::class,'payed'])->middleware('is_manager');

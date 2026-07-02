@@ -93,6 +93,12 @@ composer test        # PHPUnit
 | `config/customoptions.php` | Feature toggles (eat-in, takeaway, prepay, etc.) |
 | `config/paypal.php` | PayPal client settings |
 
+## Flash offers
+
+Managers can launch time-limited offers from `/flashoffers` that appear live (with a
+countdown and one-tap add-to-order) on the phone of every customer who is currently
+ordering. See [`docs/flash-offers.md`](docs/flash-offers.md).
+
 ## License
 
 MIT (Laravel skeleton).

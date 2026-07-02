@@ -28,8 +28,15 @@ class PayPalController extends Controller
         ]);
 
         $expected = $this->expectedAmountCents($data['context'] ?? 'pay');
+        if ($expected === null || $expected <= 0) {
+            Log::warning('PayPal create order without verifiable ticket total', [
+                'ticket' => Session::get('ticketID'),
+                'context' => $data['context'] ?? null,
+            ]);
+            throw ValidationException::withMessages(['amount' => 'No hay pedido activo para pagar.']);
+        }
         $submittedCents = (int) round(((float) $data['amount']) * 100);
-        if ($expected !== null && $submittedCents !== $expected) {
+        if ($submittedCents !== $expected) {
             Log::warning('PayPal create order amount mismatch', [
                 'submitted_cents' => $submittedCents,
                 'expected_cents' => $expected,
@@ -72,6 +79,19 @@ class PayPalController extends Controller
             return response()->json(['error' => 'order_not_found'], 404);
         }
 
+        // The basket must still match the amount the PayPal order was created for.
+        // Otherwise items added after create-order would ride along unpaid.
+        $currentExpected = $this->expectedAmountCents($pending['context'] ?? 'pay');
+        if ($currentExpected === null || $currentExpected !== (int) $pending['amount_cents']) {
+            Log::warning('PayPal capture: basket changed since order creation', [
+                'orderId' => $orderId,
+                'pending_cents' => $pending['amount_cents'] ?? null,
+                'current_cents' => $currentExpected,
+            ]);
+            Session::forget('paypal_pending_order');
+            return response()->json(['error' => 'basket_changed'], 409);
+        }
+
         try {
             $captured = $this->client->captureOrder($orderId);
         } catch (RuntimeException $e) {
@@ -84,12 +104,41 @@ class PayPalController extends Controller
             return response()->json(['error' => 'not_completed', 'status' => $status], 422);
         }
 
+        $capturedCents = $this->capturedAmountCents($captured);
+        if ($capturedCents !== null && $capturedCents !== (int) $pending['amount_cents']) {
+            Log::error('PayPal capture: captured amount differs from expected', [
+                'orderId' => $orderId,
+                'captured_cents' => $capturedCents,
+                'expected_cents' => $pending['amount_cents'] ?? null,
+            ]);
+            return response()->json(['error' => 'amount_mismatch'], 422);
+        }
+
         Session::forget('paypal_pending_order');
+
+        // Server-side proof consumed by the finalize step (printOrderOnline);
+        // without it a ticket can never be marked paid 'online'.
+        Session::put('paypal_capture_proof', [
+            'ticket' => Session::get('ticketID'),
+            'amount_cents' => (int) $pending['amount_cents'],
+            'orderId' => $orderId,
+            'captured_at' => now()->toIso8601String(),
+        ]);
 
         return response()->json([
             'status' => $status,
             'orderId' => $orderId,
         ]);
+    }
+
+    private function capturedAmountCents(array $captured): ?int
+    {
+        $capture = $captured['purchase_units'][0]['payments']['captures'][0] ?? null;
+        $value = $capture['amount']['value'] ?? null;
+        if ($value === null || !is_numeric($value)) {
+            return null;
+        }
+        return (int) round(((float) $value) * 100);
     }
 
     private function expectedAmountCents(string $context): ?int

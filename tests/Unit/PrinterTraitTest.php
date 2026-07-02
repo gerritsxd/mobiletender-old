@@ -27,9 +27,12 @@ class PrinterTraitTest extends TestCase
 
     public function testPrinterConnection()
     {
-        $printer = $this->connectToPrinter();
-        self::assertNotEmpty($printer);
-        $printer->close();
+        if (!env('PRINTER_TEST')) {
+            $this->markTestSkipped('Requires a physical ESC/POS printer; set PRINTER_TEST=1 to run.');
+        }
+        $this->connectToPrinter(1);
+        self::assertNotEmpty($this->printer);
+        $this->printer->close();
     }
 
     public function NotestPrintLine()
@@ -100,13 +103,16 @@ class PrinterTraitTest extends TestCase
 }
     public function testPrinterCodePages()
     {
-        $printer = $this->connectToPrinter();
-        $printer->getPrintConnector()->write(PRINTER::ESC ."t"."2");
-        $printer->textRaw("test");
-        $printer->textRaw("ñ");
-        $printer->textRaw(iconv( 'utf8','cp850',"ñ"));
-        $printer->text("ñ");
-        $printer->text("\n");
-        $printer->close();
+        if (!env('PRINTER_TEST')) {
+            $this->markTestSkipped('Requires a physical ESC/POS printer; set PRINTER_TEST=1 to run.');
+        }
+        $this->connectToPrinter(1);
+        $this->printer->getPrintConnector()->write(PRINTER::ESC ."t"."2");
+        $this->printer->textRaw("test");
+        $this->printer->textRaw("ñ");
+        $this->printer->textRaw(iconv( 'utf8','cp850',"ñ"));
+        $this->printer->text("ñ");
+        $this->printer->text("\n");
+        $this->printer->close();
     }
 }

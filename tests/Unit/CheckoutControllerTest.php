@@ -29,7 +29,7 @@ class CheckoutControllerTest extends TestCase
 
     }
 
-    public function testPrintOrderChangeUpdateStatus(){
+    public function testSendOrderKeepsLinesPendingWhenPrintersUnreachable(){
         $this->saveEmptyTicket($this->createEmptyTicket(),self::TABLENUMBER);
         $products[] = Product::first();
         $this->addProductsToTicket($products,self::TABLENUMBER);
@@ -37,11 +37,14 @@ class CheckoutControllerTest extends TestCase
        foreach ($ticket->m_aLines as $ticketLine) {
            self::assertEquals(true, $ticketLine->attributes->updated);
        }
+       // No printer is reachable in the test environment: sendOrder must NOT
+       // flag any line as printed, so the order can be re-sent later.
        $checkoutController= new BasketController();
-       $checkoutController->printOrder(self::TABLENUMBER);
+       $checkoutController->sendOrder(self::TABLENUMBER);
         $ticket = $this->getTicket(self::TABLENUMBER);
+        self::assertNotEmpty($ticket->m_aLines);
         foreach ($ticket->m_aLines as $ticketLine) {
-            self::assertEquals(false, $ticketLine->attributes->updated);
+            self::assertEquals(true, $ticketLine->attributes->updated);
         }
     }
 

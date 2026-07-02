@@ -71,13 +71,20 @@ class AdminPaymentController extends Controller
         $lines =  $this->getTicketLines($tableId);
         $checked = $request->input('toPay');
 
+        if (empty($checked)) {
+            return redirect(route('paypanel'))->with('error', 'No hay líneas seleccionadas para cobrar.');
+        }
 
-            $linestoPrint = [];
-            foreach ($checked as $check) {
+        $linestoPrint = [];
+        foreach ($checked as $check) {
+            if (isset($lines[$check])) {
                 $linestoPrint[] = $lines[$check];
-
             }
+        }
 
+        if (empty($linestoPrint)) {
+            return redirect(route('paypanel'))->with('error', 'Las líneas seleccionadas ya no existen.');
+        }
 
         $header = config('app.invoice_header');
 
@@ -87,9 +94,16 @@ class AdminPaymentController extends Controller
 
 
         $ticketNr = $this->setTicketPayed($tableId,$mode,$linestoPrint);
+        if ($ticketNr === null) {
+            return redirect(route('paypanel'))->with('error', 'El ticket ya estaba cobrado o vacío.');
+        }
         $header .= "\n Ticket Nr: ".$ticketNr;
 
-        $this->printInvoice($header,$linestoPrint);
+        try {
+            $this->printInvoice($header,$linestoPrint);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('payedpost: invoice print failed after payment: ' . $e->getMessage());
+        }
         return redirect(route('paypanel'));
     }
 

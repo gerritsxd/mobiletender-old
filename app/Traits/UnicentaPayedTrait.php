@@ -30,6 +30,25 @@ trait UnicentaPayedTrait
 
 
         $ticket = $this->getTicket($tableNumber);
+
+        if (is_null($linestoPrint)) {
+            $ticketLines = $this->getTicketLines($tableNumber);
+        } else {
+            $ticketLines = $linestoPrint;
+        }
+
+        // Guards against double-submit/refresh producing empty 0€ receipts.
+        if (empty($ticketLines)) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($ticket, $ticketLines, $tableNumber, $paymentType, $linestoPrint) {
+            return $this->writeTicketPayed($ticket, $ticketLines, $tableNumber, $paymentType, $linestoPrint);
+        });
+    }
+
+    private function writeTicketPayed($ticket, $ticketLines, $tableNumber, $paymentType, $linestoPrint)
+    {
         DB::update("UPDATE ticketsnum SET ID = LAST_INSERT_ID(ID + 1)");
 
 
@@ -79,12 +98,6 @@ trait UnicentaPayedTrait
         * INSERT INTO stockdiary (ID, DATENEW, REASON, LOCATION, PRODUCT, ATTRIBUTESETINSTANCE_ID, UNITS, PRICE, AppUser) VALUES ('98c99c73-e90b-4549-bf11-04cfbb1c291f', '2020-11-08 14:56:27.808', -1, '0', '0d5a6cdd-3a5e-4365-9975-0eb173108198', null, -1.0, 2.2727272727272725, 'Administrator')
         */
 
-        if (is_null($linestoPrint)) {
-            $ticketLines = $this->getTicketLines($tableNumber);
-        } else {
-            $ticketLines = $linestoPrint;
-        }
-
         $linenumber = 0;
         foreach ($ticketLines as $ticketLine) {
             //$select = DB::select("SELECT stockunits from products where id = '$ticketLine->productid'");
@@ -130,7 +143,10 @@ trait UnicentaPayedTrait
         * INSERT INTO payments (ID, RECEIPT, PAYMENT, TOTAL, TRANSID, RETURNMSG, TENDERED, CARDNAME, VOUCHER) VALUES ('4f9b20f2-95ea-46e0-9ad2-974fef60a596', 'fa06f234-d749-4801-a122-75fe6e006689', 'bank', 2.4999999999999996, null, _binary'Aceptar', 0.0, null, null)
         */
 
-        $total = $this->getSumTicketPartialLines($ticketLines) * 1.1;
+        // Line prices are net (ex-VAT): base = net sum, tax = 10% of net, total = gross.
+        $base = $this->getSumTicketPartialLines($ticketLines);
+        $tax = 0.1 * $base;
+        $total = $base * 1.1;
 
         $paymentID = Str::uuid();
         DB::insert(
@@ -140,11 +156,10 @@ trait UnicentaPayedTrait
         /*
         * INSERT INTO taxlines (ID, RECEIPT, TAXID, BASE, AMOUNT)  VALUES ('9c5f2533-74a2-40ee-a499-0cc71a299f05', 'fa06f234-d749-4801-a122-75fe6e006689', '001', 2.2727272727272725, 0.22727272727272727)
         */
-        $tax = 0.1 * $total;
         $taxid = Str::uuid();
         DB::insert(
             'INSERT INTO taxlines (ID, RECEIPT, TAXID, BASE, AMOUNT)  VALUES (?, ?, \'001\', ?, ?)',
-            [$taxid, $id, $total, $tax]
+            [$taxid, $id, $base, $tax]
         );
 
         /*
