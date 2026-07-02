@@ -10,6 +10,7 @@ use App\Traits\SharedTicketTrait;
 use App\Models\UnicentaModels\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use App\Traits\ProductTrait;
 use Illuminate\Support\Str;
@@ -30,13 +31,16 @@ class OrderController extends Controller
         $currentCategoryId = $categories[0]->id;
         $products = $this->getCategoryProducts($currentCategoryId);
         $basketItemCount = $this->countProductLinesInCurrentTicket();
+        [$rootCategoryId, $subCategories] = $this->categoryChipContext($currentCategoryId);
 
         return view('order.order', compact(
             'categories',
             'products',
             'totalBasketPrice',
             'currentCategoryId',
-            'basketItemCount'
+            'basketItemCount',
+            'rootCategoryId',
+            'subCategories'
         ));
     }
     public function menu()
@@ -105,14 +109,56 @@ class OrderController extends Controller
         $totalBasketPrice = $this->getTotalBasketValue();
         $categories = Category::where('catshowname',1 )->ordered()->get();
         $basketItemCount = $this->countProductLinesInCurrentTicket();
+        [$rootCategoryId, $subCategories] = $this->categoryChipContext($currentCategoryId);
 
         return view('order.order', compact(
             'categories',
             'products',
             'totalBasketPrice',
             'currentCategoryId',
-            'basketItemCount'
+            'basketItemCount',
+            'rootCategoryId',
+            'subCategories'
         ));
+    }
+
+    /**
+     * Root chip + sub-chips for the active category: if the active category is
+     * a child, its parent is the root; sub-chips are the root's children.
+     *
+     * @return array{0: string, 1: \Illuminate\Support\Collection}
+     */
+    private function categoryChipContext($currentCategoryId): array
+    {
+        $active = Category::find($currentCategoryId);
+        $rootCategoryId = ($active && $active->parentid) ? (string) $active->parentid : (string) $currentCategoryId;
+        $subCategories = Category::where('parentid', $rootCategoryId)->ordered()->get();
+
+        return [$rootCategoryId, $subCategories];
+    }
+
+    /**
+     * Catalog as lightweight JSON for the client-side smart search.
+     */
+    public function catalogJson()
+    {
+        $products = Cache::remember('catalog_products_json', 60, function () {
+            return Product::whereHas('product_cat')
+                ->with('category')
+                ->orderBy('name')
+                ->get()
+                ->map(function (Product $product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => round(((float) $product->pricesell) * 1.1, 2),
+                        'category' => $product->category ? $product->category->name : null,
+                        'category_id' => $product->category ? $product->category->id : null,
+                    ];
+                })->values()->all();
+        });
+
+        return response()->json(['products' => $products]);
     }
 
     public function addProduct(Request $request, $productID){

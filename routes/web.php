@@ -47,6 +47,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/order/table/order/table/{id}', [OrderController::class, 'orderForTableNr']);
     // TODO END
     Route::get('/order/', [OrderController::class, 'order'])->name('order');
+    Route::get('/order/catalog.json', [OrderController::class, 'catalogJson'])->middleware('throttle:30,1')->name('order.catalog');
     Route::get('/order/category/{id}', [OrderController::class, 'showProductsFromCategory']);
     Route::get('/menu/category/{id}', [OrderController::class, 'showProductsFromCategoryForMenu']);
 
