@@ -162,6 +162,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/stock/add',[AdminStockController::class,'addStock'])->middleware('is_manager');
 
     Route::get ('/stats',[AdminStatsController::class,'index'])->middleware('is_admin');
+    Route::get('/waiterstats', [App\Http\Controllers\Admin\WaiterStatsController::class, 'index'])->middleware('is_manager')->name('waiterstats');
+
+    // Kitchen display (iPad)
+    Route::get('/kitchen', [App\Http\Controllers\KitchenController::class, 'index'])->middleware('is_employee')->name('kitchen');
+    Route::get('/kitchen/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->middleware('is_employee')->name('kitchen.orders');
+    Route::post('/kitchen/orders/{id}/status', [App\Http\Controllers\KitchenController::class, 'setStatus'])->middleware('is_employee')->name('kitchen.status');
 
 
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

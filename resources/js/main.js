@@ -31,3 +31,4 @@ import './admin/timereport.js';
 import './admin/offer-edit.js';
 import './admin/flashoffers.js';
 import './admin/tables.js';
+import './admin/kitchen.js';

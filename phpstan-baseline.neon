@@ -161,6 +161,16 @@ parameters:
 			path: app/Http/Controllers/BasketController.php
 
 		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/BasketController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrderLine\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/BasketController.php
+
+		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:find\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/BasketController.php
@@ -316,6 +326,41 @@ parameters:
 			path: app/Http/Controllers/FlashOfferController.php
 
 		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$lines\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$ordered_by\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$sent_at\\.$#"
+			count: 2
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$status\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$table_number\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:findOrFail\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$final_price\\.$#"
 			count: 1
 			path: app/Http/Controllers/OfferController.php
@@ -377,7 +422,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:\\$category\\.$#"
-			count: 1
+			count: 2
 			path: app/Http/Controllers/OrderController.php
 
 		-
@@ -422,6 +467,11 @@ parameters:
 
 		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Category\\:\\:ordered\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/OrderController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Category\\:\\:pluck\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/OrderController.php
 

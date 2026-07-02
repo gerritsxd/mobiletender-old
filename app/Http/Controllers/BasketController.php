@@ -93,6 +93,14 @@ class BasketController extends Controller
         // the rest stay pending so they can be re-sent when the printer is back.
         $this->setTicketLinesAsPrinted($ticket, $ticketID, $printedLines);
 
+        // Mirror what just went to the printers into the kitchen display /
+        // waiter-sales log. Never let logging break an order that printed.
+        try {
+            $this->logKitchenOrder($ticketID, $printedLines);
+        } catch (\Throwable $e) {
+            Log::error('kitchen order log failed: ' . $e->getMessage(), ['ticket_id' => $ticketID]);
+        }
+
         if ($anyPrinterFailed) {
             Session::flash('error', 'Parte del pedido no se pudo imprimir. Por favor avisa a nuestro personal.');
             Log::error('Order partially printed: at least one printer failed.', [
@@ -138,6 +146,39 @@ class BasketController extends Controller
             $printedLine->setPrinted();
         }
         $this->updateOpenTable($ticket, $ticketID);
+    }
+
+    /**
+     * One kitchen_orders row per send: feeds the kitchen display (/kitchen)
+     * and the per-waiter sales stats (who sent what).
+     */
+    private function logKitchenOrder($ticketID, array $printedLines): void
+    {
+        if (empty($printedLines)) {
+            return;
+        }
+
+        $order = \App\Models\KitchenOrder::create([
+            'id' => \Illuminate\Support\Str::uuid()->toString(),
+            'table_number' => (string) $ticketID,
+            'ordered_by' => auth()->user()->name ?? 'Cliente',
+            'status' => \App\Models\KitchenOrder::STATUS_PENDING,
+            'sent_at' => \Carbon\Carbon::now(),
+        ]);
+
+        foreach ($printedLines as $line) {
+            $printto = data_get($line, 'attributes.product.printto');
+            if ($printto === null) {
+                $printto = data_get($line, 'attributes.product.printer');
+            }
+            \App\Models\KitchenOrderLine::create([
+                'kitchen_order_id' => $order->id,
+                'product_id' => data_get($line, 'productid'),
+                'product_name' => data_get($line, 'attributes.product.name', '?'),
+                'price' => (float) data_get($line, 'price', 0),
+                'printto' => $printto !== null ? (string) $printto : null,
+            ]);
+        }
     }
 
     public function printOrderEfectivo($ticketID)

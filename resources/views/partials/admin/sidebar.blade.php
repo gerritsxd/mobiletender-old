@@ -2,6 +2,7 @@
     $nav = [];
     if (Auth::user()->isEmployee()) {
         $nav[] = ['label' => __('Marcar Entrada o Salida'), 'href' => url('/timereport'), 'section' => __('Operación')];
+        $nav[] = ['label' => '👨‍🍳 ' . __('Cocina (iPad)'), 'href' => url('/kitchen'), 'section' => __('Operación')];
     }
     if (Auth::user()->isWaiter()) {
         $nav[] = ['label' => __('Seleccionar mesa'), 'href' => url('/selecttable'), 'section' => __('Operación')];
@@ -12,6 +13,9 @@
         $nav[] = ['label' => __('Stock'), 'href' => url('/stockindex'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Ofertas'), 'href' => url('/offers'), 'section' => __('Catálogo')];
         $nav[] = ['label' => '⚡ ' . __('Ofertas Flash'), 'href' => url('/flashoffers'), 'section' => __('Catálogo')];
+    }
+    if (Auth::user()->isManager()) {
+        $nav[] = ['label' => __('Ventas por camarero'), 'href' => url('/waiterstats'), 'section' => __('Caja')];
     }
     if (Auth::user()->isFinance()) {
         $nav[] = ['label' => __('Cobrar'), 'href' => url('/paypanel'), 'section' => __('Caja')];
