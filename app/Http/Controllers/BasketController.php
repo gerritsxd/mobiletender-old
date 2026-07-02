@@ -45,6 +45,7 @@ class BasketController extends Controller
 
         $ticket = $this->getTicket($ticketID);
         $unprintedTicetLines = $this->getUnprintedTicetLines($ticket);
+        $printedAny = false;
 
         if($ticketID > 100){
             $header = "NrPedido: " . $ticketID;
@@ -54,10 +55,22 @@ class BasketController extends Controller
         $this->footer = "Pedido por:" .$ticket->m_User->m_sName;
 
         for($prinernr = 1 ;$prinernr <= config('app.nr-of-printers');$prinernr++){
-            $toprint = collect($unprintedTicetLines)->where('attributes.product.printto', $prinernr)->all();
+            $toprint = collect($unprintedTicetLines)->where('attributes.product.printer', $prinernr)->all();
 
-            if(!empty($toprint))$this->sendLinesToSelectedPrinter($header, $toprint,$prinernr );
-    }
+            if (!empty($toprint) && $this->sendLinesToSelectedPrinter($header, $toprint, $prinernr)) {
+                $printedAny = true;
+            }
+        }
+
+        if (!$printedAny) {
+            Session::flash('error', 'No se ha podido imprimir el ticket. Por favor avisa a nuestro personal.');
+            Log::warning('Order print skipped: no lines matched printer mapping or all printer jobs failed.', [
+                'ticket_id' => $ticketID,
+                'nr_of_printers' => config('app.nr-of-printers'),
+            ]);
+            return redirect()->route('basket');
+        }
+
         $this->setUnprintedTicketLinesAsPrinted($ticket, $ticketID);
         $this->afterPrintOrderHandling($ticketID);
         return redirect()->route('order');
@@ -73,10 +86,11 @@ class BasketController extends Controller
         try {
             $this->printOrder($header, $toPrintLines,$printerNumber);
             Session::flash('status', 'Su pedido se esta preparando');
+            return true;
         } catch (\Exception $e) {
             Session::flash('error', 'No se ha podido imprimir el ticket. Por favor avisa a nuestro personal.');
             Log::error("Error Printing printerbridge error msg:" . $e);
-            return redirect()->route('basket');
+            return false;
         }
 
     }

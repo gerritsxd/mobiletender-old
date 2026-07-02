@@ -16,6 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use function is_array;
+use function is_string;
 use Mike42\Escpos\CapabilityProfile;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
@@ -134,8 +135,57 @@ trait PrinterTrait
 
     private function printLogo($logokey){
         $this->printer -> setJustification(Printer::JUSTIFY_CENTER);
-        $logo = EscposImage::load(config($logokey));
-        $this->printer->bitImage($logo);
+        $logoPath = $this->resolveLogoPath(config($logokey));
+        if ($logoPath === null) {
+            Log::warning('Skipping logo print: logo path not found or not readable.', [
+                'config_key' => $logokey,
+                'configured_value' => config($logokey),
+            ]);
+            return;
+        }
+
+        try {
+            // Prefer native parser first to avoid legacy GD compatibility issues on newer PHP versions.
+            $logo = EscposImage::load($logoPath, false, ['native', 'imagick', 'gd']);
+            $this->printer->bitImage($logo);
+        } catch (Throwable $e) {
+            Log::warning('Skipping logo print: image cannot be rendered.', [
+                'config_key' => $logokey,
+                'logo_path' => $logoPath,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function resolveLogoPath($configuredPath): ?string
+    {
+        if (!is_string($configuredPath) || trim($configuredPath) === '') {
+            return null;
+        }
+
+        $path = trim($configuredPath);
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return null;
+        }
+
+        $candidates = [];
+        if (str_starts_with($path, '/')) {
+            $candidates[] = $path;
+            $candidates[] = public_path(ltrim($path, '/'));
+        } else {
+            $candidates[] = $path;
+            $candidates[] = base_path($path);
+            $candidates[] = public_path($path);
+            $candidates[] = storage_path($path);
+        }
+
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '' && is_readable($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
 
