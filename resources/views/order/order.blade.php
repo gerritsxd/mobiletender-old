@@ -12,9 +12,16 @@
     $activeRootId = $rootCategoryId ?? $activeCategoryId;
     $subChips = ($subCategories ?? collect())->filter(fn ($c) => (int) ($c->catshowname ?? 1) === 1);
     $productRows = $products->filter(fn ($p) => (bool) $p->product_cat);
+    // Real products as search examples, so we never suggest things we don't sell.
+    $searchExamples = $productRows->pluck('name')
+        ->filter(fn ($n) => mb_strlen($n) <= 18)
+        ->take(2)
+        ->implode(', ');
 @endphp
 
 @section('content')
+    @include('partials.shop.tutorial')
+
     <div class="mx-auto max-w-5xl space-y-3">
         {{-- Smart search --}}
         <div class="relative">
@@ -26,7 +33,7 @@
                 type="search"
                 inputmode="search"
                 autocomplete="off"
-                placeholder="{{ __('Buscar… cerveza, mojito, pizza') }}"
+                placeholder="{{ $searchExamples ? __('Buscar…') . ' ' . $searchExamples . '…' : __('Buscar productos…') }}"
                 aria-label="{{ __('Buscar productos') }}"
                 class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-base shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
             />

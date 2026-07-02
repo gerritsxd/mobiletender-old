@@ -46,9 +46,16 @@
             <div class="space-y-3 p-4">
                 @if ($hasTable)
                     @if (config('customoptions.clean_table_after_order'))
-                        <button type="button" class="btn-primary w-full" id="pagarEfectivo">{{ __('Pagar en efectivo') }}</button>
-                        <button type="button" class="btn-primary w-full" id="pagarTarjeta">{{ __('Pagar con tarjeta') }}</button>
-                        <button type="button" class="btn-primary w-full" id="pagarOnline">{{ __('Pagar online') }}</button>
+                        {{-- Online payment first and highlighted: no waiting for staff --}}
+                        <button type="button" class="relative w-full rounded-xl bg-slate-900 py-3.5 text-base font-semibold text-white active:scale-[0.98]" id="pagarOnline">
+                            💳 {{ __('Pagar online') }}
+                            <span class="absolute -top-2 right-3 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">{{ __('Sin esperas') }}</span>
+                        </button>
+                        <p class="text-center text-xs text-slate-500">{{ __('Tarjeta, Apple Pay o Google Pay — pagas y listo.') }}</p>
+                        <div class="flex gap-2 pt-1">
+                            <button type="button" class="btn-secondary flex-1" id="pagarEfectivo">{{ __('Efectivo') }}</button>
+                            <button type="button" class="btn-secondary flex-1" id="pagarTarjeta">{{ __('Tarjeta al camarero') }}</button>
+                        </div>
                     @else
                         <button type="button" class="btn-primary w-full" id="apuntarEnLaMesa">{{ __('Pedir') }}</button>
                     @endif
