@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KitchenOrder;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class KitchenController extends Controller
 {
@@ -119,6 +120,35 @@ class KitchenController extends Controller
             ->where('ready_at', '>=', Carbon::now()->subHours(2))
             ->orderBy('ready_at', 'desc')
             ->get(['id', 'table_number', 'ready_at']);
+
+        return response()->json([
+            'orders' => $orders->map(fn ($o) => [
+                'id' => $o->id,
+                'table' => $o->table_number,
+            ])->values()->all(),
+        ]);
+    }
+
+    /**
+     * Polled by the customer's phone (session-based, no auth): ready orders
+     * for their own table/ticket — for the "your order is on its way" popup.
+     */
+    public function clientOrderStatus()
+    {
+        $ids = array_values(array_unique(array_filter([
+            (string) Session::get('ticketID'),
+            (string) Session::get('tableNumber'),
+        ], fn ($v) => $v !== '')));
+
+        if (empty($ids)) {
+            return response()->json(['orders' => []]);
+        }
+
+        $orders = KitchenOrder::whereIn('table_number', $ids)
+            ->where('status', KitchenOrder::STATUS_READY)
+            ->where('ready_at', '>=', Carbon::now()->subHour())
+            ->orderBy('ready_at', 'desc')
+            ->get(['id', 'table_number']);
 
         return response()->json([
             'orders' => $orders->map(fn ($o) => [

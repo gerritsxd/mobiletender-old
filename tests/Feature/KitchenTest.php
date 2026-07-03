@@ -163,6 +163,28 @@ class KitchenTest extends TestCase
         $other->delete();
     }
 
+    public function test_client_sees_own_table_ready_order(): void
+    {
+        $order = $this->makeKitchenOrder(); // table 7
+        $order->status = 'ready';
+        $order->ready_at = Carbon::now();
+        $order->save();
+
+        // Customer whose session is on table 7 sees it.
+        $response = $this->withSession(['ticketID' => '7', 'tableNumber' => '7'])
+            ->getJson('/order/ready-status.json');
+        $response->assertStatus(200);
+        self::assertEquals('7', $response->json('orders.0.table'));
+
+        // Customer on a different table does not.
+        $other = $this->withSession(['ticketID' => '99', 'tableNumber' => '99'])
+            ->getJson('/order/ready-status.json');
+        self::assertCount(0, $other->json('orders'));
+
+        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
+        $order->delete();
+    }
+
     public function test_waiterstats_requires_manager(): void
     {
         $employee = $this->makeEmployee();

@@ -16,6 +16,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 import './shop/order.js';
 import './shop/product-search.js';
 import './shop/flash-offers.js';
+import './shop/order-ready.js';
 import './shop/basket-page.js';
 import './shop/checkout-page.js';
 import './shop/pay-page.js';

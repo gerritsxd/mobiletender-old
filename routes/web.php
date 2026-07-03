@@ -129,6 +129,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // Flash offers: public endpoints for ordering clients
     Route::get('/flash-offers/poll', [FlashOfferController::class, 'poll'])->middleware('throttle:60,1')->name('flashoffers.poll');
+    Route::get('/order/ready-status.json', [App\Http\Controllers\KitchenController::class, 'clientOrderStatus'])->middleware('throttle:60,1')->name('order.readyStatus');
     Route::post('/order/addflashoffer/{id}', [FlashOfferController::class, 'addToOrder'])->name('flashoffers.add');
 
     // Flash offers: admin
