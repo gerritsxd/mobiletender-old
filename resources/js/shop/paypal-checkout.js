@@ -255,8 +255,16 @@ async function setupGooglePay({ paypal, amount, context, onSuccess, onError, con
         config = await googlepay.config();
     } catch (e) {
         console.warn('Google Pay config error', e);
+        logClient('googlepay_config_error', (e && e.message) || e);
         return false;
     }
+    logClient('googlepay_config', JSON.stringify({
+        eligible: !!(config && config.isEligible),
+        env: config ? config.environment : null,
+        country: config ? config.countryCode : null,
+        merchantId: !!(config && config.merchantInfo && config.merchantInfo.merchantId),
+        methods: config && config.allowedPaymentMethods ? config.allowedPaymentMethods.length : 0,
+    }));
     if (!config || !config.isEligible) {
         return false;
     }
