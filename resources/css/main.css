@@ -36,10 +36,10 @@
         @apply inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-50 sm:min-h-[2.25rem] sm:py-2;
     }
     .btn-primary {
-        @apply btn bg-brand text-slate-900 shadow hover:bg-brand-dark;
+        @apply btn bg-brand text-sea shadow hover:bg-brand-dark;
     }
     .btn-secondary {
-        @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+        @apply btn border border-sand-line bg-white text-sea-soft hover:bg-sand;
     }
     .btn-danger {
         @apply btn bg-red-600 text-white hover:bg-red-700;
@@ -51,7 +51,7 @@
         @apply inline-flex min-h-[2.5rem] cursor-pointer items-center rounded border border-amber-100 bg-gradient-to-b from-amber-50 to-white px-3 py-1.5 text-sm text-slate-800 shadow-sm hover:from-amber-100 hover:to-amber-50;
     }
     .btn-pay {
-        @apply btn w-full bg-brand px-4 py-3 text-base font-semibold text-slate-900 shadow hover:bg-brand-dark sm:max-w-md;
+        @apply btn w-full bg-brand px-4 py-3 text-base font-semibold text-sea shadow hover:bg-brand-dark sm:max-w-md;
     }
     .btn-mobilepos {
         @apply rounded border border-amber-600 bg-amber-200 px-3 py-2 text-slate-900 hover:bg-amber-300;
@@ -60,13 +60,13 @@
         @apply rounded border border-orange-300 bg-amber-200 px-3 py-2 text-slate-900 hover:bg-orange-300;
     }
     .chip {
-        @apply shrink-0 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50;
+        @apply shrink-0 rounded-full border border-sand-line bg-white px-4 py-1.5 text-sm text-sea-soft transition hover:bg-sand;
     }
     .chip-active {
-        @apply border-amber-500 bg-amber-100 text-amber-950 shadow-sm;
+        @apply border-brand bg-brand-light text-sea shadow-sm;
     }
     .card-tw {
-        @apply overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm;
+        @apply overflow-hidden rounded-xl border border-sand-line bg-white shadow-sm;
     }
     .card-tw-header {
         @apply border-b border-slate-100 bg-slate-50 px-4 py-3 font-semibold text-slate-800;

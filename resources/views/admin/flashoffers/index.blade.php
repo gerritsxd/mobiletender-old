@@ -6,7 +6,7 @@
 
 @section('page_header')
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-2xl font-bold text-slate-900">⚡ {{ __('Ofertas Flash') }}</h1>
+        <h1 class="text-2xl font-bold text-slate-900">{{ __('Ofertas Flash') }}</h1>
     </div>
 @endsection
 
@@ -73,7 +73,7 @@
                     @error('duration_minutes')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <button type="submit" class="btn-primary w-full py-3 text-base sm:w-auto sm:px-8">
-                    🚀 {{ __('Lanzar oferta flash') }}
+{{ __('Lanzar oferta flash') }}
                 </button>
             </form>
         </div>
@@ -91,7 +91,7 @@
                 <li class="card-tw border-l-4 border-l-amber-400">
                     <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
-                            <p class="text-base font-semibold text-slate-900">⚡ {{ $offer->title }}</p>
+                            <p class="text-base font-semibold text-slate-900">{{ $offer->title }}</p>
                             @if ($offer->message)
                                 <p class="text-sm text-slate-600">{{ $offer->message }}</p>
                             @endif
@@ -145,7 +145,7 @@
                         <div class="flex shrink-0 items-center gap-2">
                             <form action="{{ route('flashoffers.extend', $offer->id) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn-secondary text-xs" title="{{ __('Relanzar 15 min') }}">↻ {{ __('Relanzar') }}</button>
+                                <button type="submit" class="btn-secondary text-xs" title="{{ __('Relanzar 15 min') }}">{{ __('Relanzar') }}</button>
                             </form>
                             <form action="{{ route('flashoffers.destroy', $offer->id) }}" method="POST" onsubmit="return confirm('{{ __('¿Borrar la oferta flash?') }}');">
                                 @csrf

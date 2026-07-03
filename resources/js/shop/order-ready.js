@@ -52,16 +52,17 @@ function showPopup() {
     if ($('#client-ready-popup').length) {
         return;
     }
+    const bellSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="mx-auto h-12 w-12" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>';
     const $overlay = $(
         '<div id="client-ready-popup" class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-900/70 p-4">' +
             '<div class="w-full max-w-xs overflow-hidden rounded-2xl bg-white text-center shadow-2xl">' +
                 '<div class="bg-emerald-500 px-6 py-6 text-white">' +
-                    '<div class="text-5xl">🛎️</div>' +
+                    bellSvg +
                     '<p class="mt-2 text-xl font-extrabold">¡Pedido listo!</p>' +
                 '</div>' +
                 '<div class="px-6 py-5">' +
-                    '<p class="text-slate-700">Tu pedido va de camino a tu mesa 🍽️</p>' +
-                    '<button type="button" class="mt-4 w-full rounded-xl bg-slate-900 py-3 font-semibold text-white active:scale-[0.98]" data-close-ready>¡Genial!</button>' +
+                    '<p class="text-slate-700">Tu pedido va de camino a tu mesa.</p>' +
+                    '<button type="button" class="mt-4 w-full rounded-xl bg-sea py-3 font-semibold text-white active:scale-[0.98]" data-close-ready>¡Genial!</button>' +
                 '</div>' +
             '</div>' +
         '</div>'

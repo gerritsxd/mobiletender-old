@@ -48,9 +48,9 @@
                 @if ($hasTable)
                     @if (config('customoptions.clean_table_after_order'))
                         {{-- Online payment first and highlighted: no waiting for staff --}}
-                        <button type="button" class="relative w-full rounded-xl bg-slate-900 py-3.5 text-base font-semibold text-white active:scale-[0.98]" id="pagarOnline">
-                            💳 {{ __('Pagar online') }}
-                            <span class="absolute -top-2 right-3 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">{{ __('Sin esperas') }}</span>
+                        <button type="button" class="relative inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sea py-3.5 text-base font-semibold text-white active:scale-[0.98]" id="pagarOnline">
+                            <x-icon name="card" class="h-5 w-5" /> {{ __('Pagar online') }}
+                            <span class="absolute -top-2 right-3 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sea">{{ __('Sin esperas') }}</span>
                         </button>
                         <p class="text-center text-xs text-slate-500">{{ __('Tarjeta, Apple Pay o Google Pay — pagas y listo.') }}</p>
                         <div class="flex gap-2 pt-1">

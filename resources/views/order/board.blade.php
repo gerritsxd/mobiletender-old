@@ -5,23 +5,6 @@
 @section('page', 'order-board')
 
 @php
-    $glyph = function ($name) {
-        $n = \Illuminate\Support\Str::lower($name);
-        return match (true) {
-            str_contains($n, 'tapa') => '🫒',
-            str_contains($n, 'comida') || str_contains($n, 'plato') || str_contains($n, 'arroz') || str_contains($n, 'paella') => '🥘',
-            str_contains($n, 'cocktail') || str_contains($n, 'coctel') || str_contains($n, 'copa') => '🍹',
-            str_contains($n, 'cerveza') => '🍺',
-            str_contains($n, 'vino') => '🍷',
-            str_contains($n, 'bebida') || str_contains($n, 'refresco') || str_contains($n, 'agua') => '🥤',
-            str_contains($n, 'postre') || str_contains($n, 'dulce') || str_contains($n, 'helado') => '🍰',
-            str_contains($n, 'cafe') || str_contains($n, 'caf') => '☕',
-            str_contains($n, 'ensalada') => '🥗',
-            str_contains($n, 'carne') || str_contains($n, 'parrilla') => '🥩',
-            str_contains($n, 'pescado') || str_contains($n, 'mar') => '🐟',
-            default => '🍽️',
-        };
-    };
     $skins = [
         ['bg' => 'linear-gradient(150deg,#EC8A5F,#C7502F)', 'text' => '#ffffff', 'go' => 'rgba(255,255,255,.22)'],
         ['bg' => 'linear-gradient(150deg,#2E8C86,#16404D)', 'text' => '#ffffff', 'go' => 'rgba(255,255,255,.22)'],
@@ -90,16 +73,16 @@
                     {{-- Ofertas tile --}}
                     <a href="{{ route('order.offers') }}" class="board-tile board-shimmer" style="background:linear-gradient(150deg,#F2B54B,#E76F51);color:#4A2417">
                         <span class="sun"></span>
-                        <span class="go" style="background:rgba(74,36,23,.16)">→</span>
+                        <span class="go" style="background:rgba(74,36,23,.16)"><x-icon name="arrow-right" class="h-4 w-4"/></span>
                         @if ($liveOffers > 0)
                             <span class="board-live inline-flex w-fit items-center gap-1.5 rounded-full bg-[rgba(74,36,23,.16)] px-2.5 py-1 text-[11px] font-bold">
                                 <span class="pulse"></span>{{ $liveOffers }} {{ __('activas') }}
                             </span>
                         @else
-                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-[rgba(74,36,23,.16)] px-2.5 py-1 text-[11px] font-bold">⚡ {{ __('Flash') }}</span>
+                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-[rgba(74,36,23,.16)] px-2.5 py-1 text-[11px] font-bold">{{ __('Flash') }}</span>
                         @endif
                         <div>
-                            <div class="board-glyph">⚡</div>
+                            <x-icon name="bolt" class="mb-1 h-8 w-8" style="stroke-width:1.4" />
                             <div class="text-xl font-bold leading-tight">{{ __('Ofertas') }}</div>
                             <div class="text-xs font-semibold opacity-90">{{ __('Hoy en la playa') }}</div>
                         </div>
@@ -110,11 +93,10 @@
                         <a href="/order/category/{{ $cat->id }}" class="board-tile"
                            style="background:{{ $skin['bg'] }};color:{{ $skin['text'] }}">
                             <span class="sun"></span>
-                            <span class="go" style="background:{{ $skin['go'] }}">→</span>
-                            <div class="board-glyph">{{ $glyph($cat->name) }}</div>
-                            <div>
-                                <div class="text-xl font-bold leading-tight">{{ __($cat->name) }}</div>
-                                <div class="text-xs font-semibold opacity-90">{{ $cat->count }} {{ __('platos') }}</div>
+                            <span class="go" style="background:{{ $skin['go'] }}"><x-icon name="arrow-right" class="h-4 w-4"/></span>
+                            <div class="mt-auto">
+                                <div class="text-2xl font-bold leading-none tracking-tight">{{ __($cat->name) }}</div>
+                                <div class="mt-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">{{ $cat->count }} {{ __('platos') }}</div>
                             </div>
                         </a>
                     @endforeach

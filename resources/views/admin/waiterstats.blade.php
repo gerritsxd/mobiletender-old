@@ -24,7 +24,7 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <section class="card-tw" aria-label="{{ __('Vendido (pedidos enviados)') }}">
             <div class="card-tw-header text-sm font-semibold uppercase tracking-wide text-slate-500">
-                🧾 {{ __('Vendido — quién tomó el pedido') }}
+{{ __('Vendido — quién tomó el pedido') }}
             </div>
             @if (empty($sold))
                 <p class="p-6 text-center text-sm text-slate-500">{{ __('Sin pedidos en este periodo.') }}</p>
@@ -57,7 +57,7 @@
 
         <section class="card-tw" aria-label="{{ __('Cobrado') }}">
             <div class="card-tw-header text-sm font-semibold uppercase tracking-wide text-slate-500">
-                💶 {{ __('Cobrado — quién cerró la cuenta') }}
+{{ __('Cobrado — quién cerró la cuenta') }}
             </div>
             @if (empty($charged))
                 <p class="p-6 text-center text-sm text-slate-500">{{ __('Sin cobros en este periodo.') }}</p>

@@ -96,18 +96,18 @@ function renderCard(order) {
             $('<p class="mb-2 text-sm font-semibold text-emerald-300"></p>')
                 .text('→ ' + tableLabel(order.table) + (order.ordered_by ? ' · ' + order.ordered_by : ''))
         );
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold text-emerald-950 active:scale-[0.98]">✓ ' + 'ENTREGADO' + '</button>');
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Entregado</button>');
         $btn.on('click', function () { setStatus(order.id, 'delivered', $(this)); });
         $card.append($btn);
     } else if (isDoing) {
         $card.append($('<p class="mb-2 text-xs text-slate-400"></p>').text('Pedido: ' + (order.ordered_by || 'Cliente')));
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold text-emerald-950 active:scale-[0.98]">✓ LISTO</button>');
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Listo</button>');
         $btn.on('click', function () { setStatus(order.id, 'ready', $(this)); });
         $card.append($btn);
     } else {
         // TODO
         $card.append($('<p class="mb-2 text-xs text-slate-400"></p>').text('Pedido: ' + (order.ordered_by || 'Cliente')));
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-amber-400 py-3 text-base font-bold text-amber-950 active:scale-[0.98]">▶ EMPEZAR</button>');
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-amber-400 py-3 text-base font-bold uppercase tracking-wide text-amber-950 active:scale-[0.98]">Empezar</button>');
         $btn.on('click', function () { setStatus(order.id, 'preparing', $(this)); });
         $card.append($btn);
     }

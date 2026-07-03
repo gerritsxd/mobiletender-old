@@ -9,7 +9,7 @@
     @vite(['resources/css/main.css', 'resources/js/main.js'])
     @stack('head')
 </head>
-<body class="min-h-screen overflow-x-hidden bg-slate-50 pb-20 text-slate-800 antialiased sm:pb-0" data-page="@yield('page', 'shop')">
+<body class="min-h-screen overflow-x-hidden bg-sand pb-20 text-sea antialiased sm:pb-0" data-page="@yield('page', 'shop')" style="background-image:radial-gradient(120% 80% at 50% -8%, #FDF7EA 0%, #F6EDDD 46%, #EFE2CB 100%);background-attachment:fixed;">
 <div id="overlay" class="overlay" aria-hidden="true">
     <img src="/img/loader.gif" alt="" class="mx-auto" /><br/>
     <span class="text-slate-600">Loading…</span>

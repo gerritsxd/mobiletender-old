@@ -8,9 +8,9 @@
 <div class="mt-0 flex w-full flex-col gap-2">
     @if ($isTableMesa)
         @if (! $unprintedlines)
-            <button type="button" class="btn-pay relative" data-basket-action="pagar-online">
-                💳 {{ __('Pagar online') }}
-                <span class="absolute -top-2 right-3 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">{{ __('Sin esperas') }}</span>
+            <button type="button" class="btn-pay relative inline-flex items-center justify-center gap-2" data-basket-action="pagar-online">
+                <x-icon name="card" class="h-5 w-5" /> {{ __('Pagar online') }}
+                <span class="absolute -top-2 right-3 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sea">{{ __('Sin esperas') }}</span>
             </button>
             <p class="text-center text-xs text-slate-500">{{ __('Tarjeta, Apple Pay o Google Pay — pagas y listo.') }}</p>
             <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">

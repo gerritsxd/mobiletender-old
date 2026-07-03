@@ -51,21 +51,22 @@ function renderOffer(offer) {
               : '')
         : '';
 
+    const boltSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="inline h-4 w-4 -mt-0.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>';
     const $el = $(
-        '<div class="flash-offer-banner pointer-events-auto overflow-hidden rounded-xl bg-amber-400 text-slate-900 shadow-lg" role="alert">' +
+        '<div class="flash-offer-banner pointer-events-auto overflow-hidden rounded-xl bg-brand text-sea shadow-lg" role="alert">' +
             '<div class="flex items-start gap-3 p-3">' +
                 '<div class="min-w-0 flex-1">' +
-                    '<p class="text-sm font-bold">⚡ ' + escapeHtml(offer.title) + '</p>' +
+                    '<p class="text-sm font-bold">' + boltSvg + ' ' + escapeHtml(offer.title) + '</p>' +
                     (offer.message ? '<p class="mt-0.5 text-xs">' + escapeHtml(offer.message) + '</p>' : '') +
                     '<p class="mt-1 text-xs">' +
                         (offer.product_name ? escapeHtml(offer.product_name) + ' ' : '') + priceHtml +
                         ' · <span data-flash-countdown>' + formatCountdown(offer.seconds_left) + '</span>' +
                     '</p>' +
                 '</div>' +
-                '<button type="button" class="shrink-0 rounded-full p-1 text-slate-700 hover:bg-amber-300" data-flash-dismiss aria-label="Cerrar">✕</button>' +
+                '<button type="button" class="shrink-0 rounded-full p-1 text-sea hover:bg-brand-dark" data-flash-dismiss aria-label="Cerrar">✕</button>' +
             '</div>' +
             (offer.product_id
-                ? '<button type="button" class="block w-full bg-slate-900 py-2 text-center text-sm font-semibold text-amber-400" data-flash-add>' +
+                ? '<button type="button" class="block w-full bg-sea py-2 text-center text-sm font-semibold text-brand" data-flash-add>' +
                       '¡Lo quiero! Añadir al pedido' +
                   '</button>'
                 : '') +
@@ -91,7 +92,7 @@ function renderOffer(offer) {
                 if (data && data.total != null) {
                     updateBasketBadge(data.total, data.lineCount);
                 }
-                $btn.text('✓ ¡Añadido!');
+                $btn.text('¡Añadido!');
                 setTimeout(function () {
                     addStored(DISMISSED_KEY, offer.id);
                     $el.remove();
@@ -123,7 +124,7 @@ function notifyIfHidden(offer) {
     try {
         const body = (offer.message ? offer.message + ' · ' : '') +
             (offer.price != null ? Number(offer.price).toFixed(2) + '€' : '');
-        new Notification('⚡ ' + offer.title, { body: body, tag: 'flash-offer-' + offer.id });
+        new Notification(offer.title, { body: body, tag: 'flash-offer-' + offer.id });
     } catch (e) {
         // Notification constructor unavailable (e.g. Android requires SW) — banner still shows.
     }
