@@ -47,6 +47,36 @@ function loadPayPalSdk(clientId) {
     return sdkPromise;
 }
 
+/**
+ * Fire-and-forget client-side event log so payment failures on customer
+ * phones show up in the server's laravel.log.
+ */
+function logClient(stage, detail) {
+    try {
+        fetch('/paypal/client-log', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify({ stage: String(stage), detail: detail == null ? null : String(detail).slice(0, 480) }),
+        });
+    } catch (e) {
+        // logging must never break the payment flow
+    }
+}
+
+async function readErrorBody(res) {
+    try {
+        return (await res.text()).slice(0, 200);
+    } catch (e) {
+        return '';
+    }
+}
+
 async function createServerOrder({ amount, context, csrfToken }) {
     const res = await fetch('/paypal/create-order', {
         method: 'POST',
@@ -60,7 +90,11 @@ async function createServerOrder({ amount, context, csrfToken }) {
         body: JSON.stringify({ amount, context }),
     });
     if (!res.ok) {
-        throw new Error('create order failed: ' + res.status);
+        const body = await readErrorBody(res);
+        logClient('create_order_http_error', res.status + ' ' + body);
+        const err = new Error('create order failed: ' + res.status);
+        err.status = res.status;
+        throw err;
     }
     return res.json();
 }
@@ -76,6 +110,8 @@ async function captureServerOrder(orderId, csrfToken) {
         },
     });
     if (!res.ok) {
+        const body = await readErrorBody(res);
+        logClient('capture_http_error', res.status + ' ' + body);
         const err = new Error('capture failed: ' + res.status);
         err.status = res.status;
         throw err;
@@ -177,6 +213,7 @@ async function setupApplePay({ paypal, amount, context, onSuccess, onError, cont
                         onError && onError(new Error('capture not completed'));
                     }
                 } catch (e) {
+                    logClient('applepay_error', (e && e.message) || e);
                     console.error('Apple Pay confirm/capture failed', e);
                     session.completePayment({ status: window.ApplePaySession.STATUS_FAILURE });
                     onError && onError(e);
@@ -267,15 +304,26 @@ async function setupGooglePay({ paypal, amount, context, onSuccess, onError, con
                 };
                 showOverlay();
                 const paymentData = await paymentsClient.loadPaymentData(paymentDataRequest);
-                await googlepay.confirmOrder({
+                const confirmResult = await googlepay.confirmOrder({
                     orderId: orderResult.id,
                     paymentMethodData: paymentData.paymentMethodData,
                 });
+                const confirmStatus = confirmResult && confirmResult.status;
+                logClient('googlepay_confirm', confirmStatus);
+
+                // European cards routinely require 3D Secure: PayPal answers
+                // PAYER_ACTION_REQUIRED and we must run the challenge before capture.
+                if (confirmStatus === 'PAYER_ACTION_REQUIRED') {
+                    await googlepay.initiatePayerAction({ orderId: orderResult.id });
+                    logClient('googlepay_3ds', 'completed');
+                }
+
                 const captured = await captureServerOrder(orderResult.id, csrfToken);
                 hideOverlay();
                 if (captured.status === 'COMPLETED') {
                     onSuccess && onSuccess(captured);
                 } else {
+                    logClient('googlepay_capture_status', captured && captured.status);
                     onError && onError(new Error('capture not completed'));
                 }
             } catch (e) {
@@ -283,6 +331,7 @@ async function setupGooglePay({ paypal, amount, context, onSuccess, onError, con
                 if (e && e.statusCode === 'CANCELED') {
                     return;
                 }
+                logClient('googlepay_error', (e && (e.message || e.statusCode)) || e);
                 console.error('Google Pay flow failed', e);
                 onError && onError(e);
             }
@@ -331,6 +380,7 @@ function setupPayPalButtons({ paypal, amount, context, onSuccess, onError, conta
             onCancel: () => hideOverlay(),
             onError: (e) => {
                 hideOverlay();
+                logClient('paypal_buttons_error', (e && e.message) || e);
                 onError && onError(e);
             },
         })

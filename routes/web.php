@@ -73,6 +73,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/checkout/printOrderTicket/{id}', [BasketController::class, 'printTicketfromPayment']);
 
     Route::post('/paypal/create-order', [PayPalController::class, 'createOrder'])->name('paypal.createOrder');
+    Route::post('/paypal/client-log', [PayPalController::class, 'clientLog'])->middleware('throttle:30,1')->name('paypal.clientLog');
     Route::post('/paypal/capture-order/{orderId}', [PayPalController::class, 'captureOrder'])
         ->where('orderId', '[A-Z0-9]+')
         ->name('paypal.captureOrder');

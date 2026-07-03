@@ -141,6 +141,27 @@ class PayPalController extends Controller
         return (int) round(((float) $value) * 100);
     }
 
+    /**
+     * Receives client-side payment events so wallet failures on customer
+     * phones are visible in laravel.log.
+     */
+    public function clientLog(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'stage' => 'required|string|max:60',
+            'detail' => 'nullable|string|max:500',
+        ]);
+
+        Log::warning('PayPal client event', [
+            'stage' => $data['stage'],
+            'detail' => $data['detail'] ?? null,
+            'ticket' => Session::get('ticketID'),
+            'ua' => substr((string) $request->userAgent(), 0, 120),
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
     private function expectedAmountCents(string $context): ?int
     {
         $ticketId = Session::get('ticketID');
