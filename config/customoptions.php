@@ -29,6 +29,10 @@ return [
     'delivery_prepay'=> env('DELIVERY_PREPAY',true),
 
     'clean_table_after_order' => env('CLEAN_TABLE_AFTER_ORDER',false),
-    'clean_table_after_bill' => env('CLEAN_TABLE_AFTER_BILL',false)
+    'clean_table_after_bill' => env('CLEAN_TABLE_AFTER_BILL',false),
+
+    // Which printer number the kitchen display shows (products routed to this
+    // printer are the ones cooked in the kitchen). Comma-separated for several.
+    'kitchen_printers' => env('KITCHEN_PRINTERS', '2'),
 
     ];

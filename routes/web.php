@@ -168,6 +168,7 @@ Route::group(['middleware' => ['web']], function () {
     // Kitchen display (iPad)
     Route::get('/kitchen', [App\Http\Controllers\KitchenController::class, 'index'])->middleware('is_employee')->name('kitchen');
     Route::get('/kitchen/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->middleware('is_employee')->name('kitchen.orders');
+    Route::get('/kitchen/ready-for-me.json', [App\Http\Controllers\KitchenController::class, 'readyForMe'])->middleware('is_employee')->name('kitchen.readyForMe');
     Route::post('/kitchen/orders/{id}/status', [App\Http\Controllers\KitchenController::class, 'setStatus'])->middleware('is_employee')->name('kitchen.status');
 
 

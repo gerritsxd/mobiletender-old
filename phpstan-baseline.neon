@@ -326,37 +326,12 @@ parameters:
 			path: app/Http/Controllers/FlashOfferController.php
 
 		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$id\\.$#"
-			count: 1
-			path: app/Http/Controllers/KitchenController.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$lines\\.$#"
-			count: 1
-			path: app/Http/Controllers/KitchenController.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$ordered_by\\.$#"
-			count: 1
-			path: app/Http/Controllers/KitchenController.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$sent_at\\.$#"
-			count: 2
-			path: app/Http/Controllers/KitchenController.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$status\\.$#"
-			count: 1
-			path: app/Http/Controllers/KitchenController.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\KitchenOrder\\:\\:\\$table_number\\.$#"
-			count: 1
-			path: app/Http/Controllers/KitchenController.php
-
-		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:findOrFail\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:where\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/KitchenController.php
 

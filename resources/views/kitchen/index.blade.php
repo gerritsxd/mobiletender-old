@@ -9,32 +9,40 @@
 </head>
 <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased" data-page="kitchen">
 
-<header class="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/95 px-4 py-3">
+<header class="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/95 px-4 py-3">
     <div class="flex items-center gap-3">
         <h1 class="text-xl font-bold">👨‍🍳 {{ __('Cocina') }}</h1>
         <span id="kds-clock" class="font-mono text-lg tabular-nums text-slate-400"></span>
     </div>
-    <div id="kds-stations" class="flex flex-wrap gap-2">
-        {{-- station filter chips rendered by kitchen.js --}}
-    </div>
-    <a href="{{ route('admin') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300">{{ __('Salir') }}</a>
+    <a href="{{ route('admin') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 no-underline">{{ __('Salir') }}</a>
 </header>
 
-<main class="grid gap-4 p-4 lg:grid-cols-[2fr,1fr]">
-    <section aria-label="{{ __('En cocina') }}">
-        <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-400">🔥 {{ __('En cocina — por orden de llegada') }}</h2>
-        <div id="kds-pending" class="grid gap-3 sm:grid-cols-2"></div>
-        <p id="kds-pending-empty" class="hidden rounded-xl border border-dashed border-slate-800 py-14 text-center text-slate-500">
-            {{ __('Sin comandas pendientes 🎉') }}
-        </p>
+<main class="grid gap-3 p-3 md:grid-cols-3">
+    {{-- TODO --}}
+    <section class="flex flex-col rounded-xl bg-slate-900/40 p-2" aria-label="{{ __('Por hacer') }}">
+        <h2 class="mb-2 flex items-center justify-between px-1 text-sm font-bold uppercase tracking-widest text-slate-400">
+            <span>📋 {{ __('Por hacer') }}</span>
+            <span id="count-todo" class="rounded-full bg-slate-800 px-2 py-0.5 text-xs tabular-nums">0</span>
+        </h2>
+        <div id="col-todo" class="flex flex-1 flex-col gap-2"></div>
     </section>
 
-    <section aria-label="{{ __('Listo para servir') }}">
-        <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-emerald-400">🛎️ {{ __('Listo — servir a…') }}</h2>
-        <div id="kds-ready" class="grid gap-3"></div>
-        <p id="kds-ready-empty" class="hidden rounded-xl border border-dashed border-slate-800 py-14 text-center text-slate-500">
-            {{ __('Nada esperando camarero') }}
-        </p>
+    {{-- DOING --}}
+    <section class="flex flex-col rounded-xl bg-amber-950/20 p-2" aria-label="{{ __('En marcha') }}">
+        <h2 class="mb-2 flex items-center justify-between px-1 text-sm font-bold uppercase tracking-widest text-amber-400">
+            <span>🔥 {{ __('En marcha') }}</span>
+            <span id="count-doing" class="rounded-full bg-amber-900/40 px-2 py-0.5 text-xs tabular-nums">0</span>
+        </h2>
+        <div id="col-doing" class="flex flex-1 flex-col gap-2"></div>
+    </section>
+
+    {{-- DONE --}}
+    <section class="flex flex-col rounded-xl bg-emerald-950/20 p-2" aria-label="{{ __('Listo para servir') }}">
+        <h2 class="mb-2 flex items-center justify-between px-1 text-sm font-bold uppercase tracking-widest text-emerald-400">
+            <span>🛎️ {{ __('Listo — llevar a') }}</span>
+            <span id="count-done" class="rounded-full bg-emerald-900/40 px-2 py-0.5 text-xs tabular-nums">0</span>
+        </h2>
+        <div id="col-done" class="flex flex-1 flex-col gap-2"></div>
     </section>
 </main>
 
