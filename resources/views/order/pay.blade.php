@@ -27,6 +27,7 @@
         'amount' => $amountDue,
         'paypalClientId' => config('paypal.client_id'),
         'onApproveUrl' => $onApproveUrl,
+        'live' => config('paypal.settings.mode') === 'live',
     ];
 
     if ($isPickup) {

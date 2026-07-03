@@ -11,6 +11,7 @@
         'paypalPrepay' => (bool) (config('customoptions.eatin_prepay') || config('customoptions.takeaway_prepay') || config('customoptions.delivery_prepay')),
         'paypalClientId' => config('paypal.client_id'),
         'hasTableNumber' => (bool) Session::get('tableNumber'),
+        'live' => config('paypal.settings.mode') === 'live',
     ];
     $hasTable = (bool) Session::get('tableNumber');
     $hasNewLines = $newLinesPrice > 0;

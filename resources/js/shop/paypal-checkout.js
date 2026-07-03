@@ -236,7 +236,7 @@ async function setupApplePay({ paypal, amount, context, onSuccess, onError, cont
     return true;
 }
 
-async function setupGooglePay({ paypal, amount, context, onSuccess, onError, container }) {
+async function setupGooglePay({ paypal, amount, context, onSuccess, onError, container, live }) {
     if (!container) {
         return false;
     }
@@ -260,7 +260,7 @@ async function setupGooglePay({ paypal, amount, context, onSuccess, onError, con
     }
     logClient('googlepay_config', JSON.stringify({
         eligible: !!(config && config.isEligible),
-        env: config ? config.environment : null,
+        gpEnv: config.environment || (live ? 'PRODUCTION' : 'TEST'),
         country: config ? config.countryCode : null,
         merchantId: !!(config && config.merchantInfo && config.merchantInfo.merchantId),
         methods: config && config.allowedPaymentMethods ? config.allowedPaymentMethods.length : 0,
@@ -269,8 +269,13 @@ async function setupGooglePay({ paypal, amount, context, onSuccess, onError, con
         return false;
     }
     const csrfToken = getCsrfToken();
+    // PayPal's googlepay.config() does not return an environment field, so we
+    // derive it from the server's PayPal mode. Live MUST use PRODUCTION —
+    // otherwise Google Pay mints a TEST token the live backend rejects
+    // (APPROVE_GOOGLE_PAY_VALIDATION_ERROR).
+    const gpEnvironment = config.environment || (live ? 'PRODUCTION' : 'TEST');
     const paymentsClient = new window.google.payments.api.PaymentsClient({
-        environment: config.environment || 'TEST',
+        environment: gpEnvironment,
     });
     let isReady;
     try {
@@ -456,6 +461,7 @@ export async function initPayPalCheckout(opts) {
             amount,
             context: ctx,
             container: opts.googlePayContainer,
+            live: !!opts.live,
             onSuccess,
             onError,
         }),
