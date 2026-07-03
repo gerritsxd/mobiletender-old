@@ -74,9 +74,13 @@ class PayPalClient
 
     public function captureOrder(string $orderId): array
     {
+        // PayPal's capture endpoint takes no body, but Laravel's default JSON
+        // body format sends an empty string with Content-Type: application/json,
+        // which PayPal rejects as MALFORMED_REQUEST_JSON. Send an explicit {}.
         $response = Http::withToken($this->getAccessToken())
             ->acceptJson()
             ->withHeaders(['PayPal-Request-Id' => (string) bin2hex(random_bytes(16))])
+            ->withBody('{}', 'application/json')
             ->post($this->apiBase . '/v2/checkout/orders/' . urlencode($orderId) . '/capture');
 
         $this->throwIfBadResponse($response, 'captureOrder');
