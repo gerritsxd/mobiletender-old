@@ -23,6 +23,9 @@
     @include('partials.shop.tutorial')
 
     <div class="mx-auto max-w-5xl space-y-3">
+        <a href="{{ route('order') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 no-underline hover:text-slate-900">
+            <span class="text-lg leading-none">‹</span> {{ __('La carta') }}
+        </a>
         {{-- Smart search --}}
         <div class="relative">
             <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

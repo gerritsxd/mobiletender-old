@@ -23,24 +23,55 @@ class OrderController extends Controller
     use ProductTrait;
     protected $categories;
 
+    /**
+     * Landing: the visual category board (El Tablero).
+     */
     public function order()
     {
         $this->checkForSessionTicketId();
         $totalBasketPrice = $this->getTotalBasketValue();
-        $categories = Category::where('catshowname',1 )->ordered()->get();
-        $currentCategoryId = $categories[0]->id;
-        $products = $this->getCategoryProducts($currentCategoryId);
         $basketItemCount = $this->countProductLinesInCurrentTicket();
-        [$rootCategoryId, $subCategories] = $this->categoryChipContext($currentCategoryId);
 
-        return view('order.order', compact(
-            'categories',
-            'products',
+        $allCats = Category::where('catshowname', 1)->ordered()->get();
+        $topLevel = $allCats->filter(fn ($c) => $c->parentid === null || $c->parentid === '')->values();
+        $childrenByParent = $allCats->groupBy('parentid');
+
+        // Catalog product count per category (only products shown in the shop).
+        $counts = \Illuminate\Support\Facades\DB::table('products')
+            ->join('products_cat', 'products_cat.product', '=', 'products.id')
+            ->select('products.category', \Illuminate\Support\Facades\DB::raw('count(*) as c'))
+            ->groupBy('products.category')
+            ->pluck('c', 'category');
+
+        $board = $topLevel->map(function ($cat) use ($counts, $childrenByParent) {
+            $count = (int) ($counts[$cat->id] ?? 0);
+            foreach ($childrenByParent->get($cat->id, collect()) as $child) {
+                $count += (int) ($counts[$child->id] ?? 0);
+            }
+            return (object) ['id' => $cat->id, 'name' => $cat->name, 'count' => $count];
+        })->filter(fn ($c) => $c->count > 0)->values();
+
+        $liveOffers = \App\Models\FlashOffer::live()->count();
+
+        // Populares: most-ordered products, falling back to a catalog sample.
+        $popIds = \Illuminate\Support\Facades\DB::table('kitchen_order_lines')
+            ->select('product_id', \Illuminate\Support\Facades\DB::raw('count(*) as c'))
+            ->whereNotNull('product_id')
+            ->groupBy('product_id')
+            ->orderByDesc('c')
+            ->limit(8)
+            ->pluck('product_id');
+        $populares = Product::whereIn('id', $popIds)->get();
+        if ($populares->count() < 4) {
+            $populares = Product::whereHas('product_cat')->orderBy('name')->limit(8)->get();
+        }
+
+        return view('order.board', compact(
+            'board',
+            'liveOffers',
+            'populares',
             'totalBasketPrice',
-            'currentCategoryId',
-            'basketItemCount',
-            'rootCategoryId',
-            'subCategories'
+            'basketItemCount'
         ));
     }
     public function menu()

@@ -336,6 +336,11 @@ parameters:
 			path: app/Http/Controllers/KitchenController.php
 
 		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:whereIn\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/KitchenController.php
+
+		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Offer\\:\\:\\$final_price\\.$#"
 			count: 1
 			path: app/Http/Controllers/OfferController.php
@@ -431,6 +436,11 @@ parameters:
 			path: app/Http/Controllers/OrderController.php
 
 		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\FlashOffer\\:\\:live\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/OrderController.php
+
+		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\ProductAdOn\\:\\:where\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/OrderController.php
@@ -462,12 +472,12 @@ parameters:
 
 		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:whereHas\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: app/Http/Controllers/OrderController.php
 
 		-
 			message: "#^Call to an undefined static method App\\\\Models\\\\UnicentaModels\\\\Product\\:\\:whereIn\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: app/Http/Controllers/OrderController.php
 
 		-
