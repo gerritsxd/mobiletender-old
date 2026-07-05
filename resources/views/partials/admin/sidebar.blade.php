@@ -9,6 +9,7 @@
     }
     if (Auth::user()->isManager()) {
         $nav[] = ['label' => __('Mesas y Pedidos'), 'href' => url('/openorders'), 'section' => __('Catálogo')];
+        $nav[] = ['label' => __('Todos los pedidos'), 'href' => url('/orderslog'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Products'), 'href' => url('/products'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Stock'), 'href' => url('/stockindex'), 'section' => __('Catálogo')];
         $nav[] = ['label' => __('Ofertas'), 'href' => url('/offers'), 'section' => __('Catálogo')];

@@ -166,6 +166,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::get ('/stats',[AdminStatsController::class,'index'])->middleware('is_admin');
     Route::get('/waiterstats', [App\Http\Controllers\Admin\WaiterStatsController::class, 'index'])->middleware('is_manager')->name('waiterstats');
 
+    // All orders log (infinite scroll, station filter)
+    Route::get('/orderslog', [App\Http\Controllers\Admin\OrdersLogController::class, 'index'])->middleware('is_manager')->name('orderslog');
+    Route::get('/orderslog/feed.json', [App\Http\Controllers\Admin\OrdersLogController::class, 'feed'])->middleware('is_manager')->name('orderslog.feed');
+
     // Kitchen display (iPad)
     Route::get('/kitchen', [App\Http\Controllers\KitchenController::class, 'index'])->middleware('is_employee')->name('kitchen');
     Route::get('/kitchen/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->middleware('is_employee')->name('kitchen.orders');

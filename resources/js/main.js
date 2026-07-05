@@ -34,3 +34,4 @@ import './admin/offer-edit.js';
 import './admin/flashoffers.js';
 import './admin/tables.js';
 import './admin/kitchen.js';
+import './admin/orders-log.js';
