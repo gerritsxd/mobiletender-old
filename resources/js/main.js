@@ -8,6 +8,7 @@ window.Alpine = Alpine;
 Alpine.start();
 
 import './shared/jquery-csrf.js';
+import './shared/alerts.js';
 import './shared/waiter-notify.js';
 import axios from 'axios';
 window.axios = axios;

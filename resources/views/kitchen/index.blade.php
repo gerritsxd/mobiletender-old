@@ -15,7 +15,16 @@
         <h1 class="text-xl font-bold">{{ __('Cocina') }}</h1>
         <span id="kds-clock" class="font-mono text-lg tabular-nums text-slate-400"></span>
     </div>
-    <a href="{{ route('admin') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 no-underline">{{ __('Salir') }}</a>
+    <div class="flex items-center gap-2">
+        <button type="button" id="kds-sound-toggle"
+                class="inline-flex items-center gap-2 rounded-lg border border-amber-500 bg-amber-500/10 px-3 py-1.5 text-sm font-semibold text-amber-300">
+            <span id="kds-sound-icon">
+                <x-icon name="bell" class="h-4 w-4" />
+            </span>
+            <span id="kds-sound-label">{{ __('Activar sonido') }}</span>
+        </button>
+        <a href="{{ route('admin') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 no-underline">{{ __('Salir') }}</a>
+    </div>
 </header>
 
 {{-- Aggregate prep list: total still to cook, across all tables --}}

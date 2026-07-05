@@ -17,19 +17,8 @@ function csrf() {
 }
 
 function beep() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.25, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-    } catch (e) {
-        /* no audio */
+    if (window.mtAlerts) {
+        window.mtAlerts.alertUser('order', [180, 90, 180]);
     }
 }
 
@@ -156,8 +145,26 @@ function refresh() {
     $.getJSON('/kitchen/orders.json').done(render);
 }
 
+function markSoundOn() {
+    $('#kds-sound-toggle')
+        .removeClass('border-amber-500 bg-amber-500/10 text-amber-300')
+        .addClass('border-emerald-500 bg-emerald-500/10 text-emerald-300');
+    $('#kds-sound-label').text('Avisos activos');
+}
+
 $(function () {
     if ($('body').data('page') !== 'kitchen') return;
+
+    // The kitchen screen is passive, so make enabling sound explicit: one tap
+    // unlocks audio + a test chime for the whole shift.
+    $('#kds-sound-toggle').on('click', function () {
+        if (window.mtAlerts) {
+            window.mtAlerts.unlock();
+            window.mtAlerts.alertUser('ready', [120]);
+        }
+        markSoundOn();
+    });
+    document.addEventListener('mt-audio-unlocked', markSoundOn);
 
     refresh();
     setInterval(refresh, POLL_MS);

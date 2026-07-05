@@ -27,23 +27,8 @@ function markSeen(ids) {
 }
 
 function chime() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        [660, 880, 1175].forEach(function (freq, i) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = freq;
-            const t = ctx.currentTime + i * 0.15;
-            gain.gain.setValueAtTime(0.0001, t);
-            gain.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-            osc.start(t);
-            osc.stop(t + 0.3);
-        });
-    } catch (e) {
-        /* no audio */
+    if (window.mtAlerts) {
+        window.mtAlerts.alertUser('order', [200, 100, 200, 100, 200]);
     }
 }
 
