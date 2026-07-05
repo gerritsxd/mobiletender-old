@@ -16,6 +16,7 @@ class User extends Authenticatable
     const MANAGER_TYPE = 'manager';
     const WAITER_TYPE = 'waiter';
     const EMPLOYEE_TYPE = 'employee';
+    const KITCHEN_TYPE = 'kitchen';
 
     /**
      * The attributes that are mass assignable.
@@ -76,10 +77,21 @@ class User extends Authenticatable
     public function isEmployee(){
         return
             $this->type === self::EMPLOYEE_TYPE OR
+            $this->type === self::KITCHEN_TYPE OR
             $this->type === self::FINANCE_TYPE OR
             $this->type === self::WAITER_TYPE OR
             $this->type === self::MANAGER_TYPE OR
             $this->type === self::ADMIN_TYPE;
 
+    }
+
+    /**
+     * Kitchen staff: reach the private area and the kitchen display only.
+     */
+    public function isKitchen(){
+        return
+            $this->type === self::KITCHEN_TYPE OR
+            $this->type === self::MANAGER_TYPE OR
+            $this->type === self::ADMIN_TYPE;
     }
 }

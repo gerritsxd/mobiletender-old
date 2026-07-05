@@ -29,6 +29,7 @@
                                 <option value="{{ $user->id }}.finance" @selected($user->type == 'finance')>Caja</option>
                                 <option value="{{ $user->id }}.manager" @selected($user->type == 'manager')>Encargado</option>
                                 <option value="{{ $user->id }}.waiter" @selected($user->type == 'waiter')>Camarera</option>
+                                <option value="{{ $user->id }}.kitchen" @selected($user->type == 'kitchen')>Cocina</option>
                                 <option value="{{ $user->id }}.employee" @selected($user->type == 'employee')>Empleado</option>
                                 <option value="{{ $user->id }}.default" @selected($user->type == 'default')></option>
                             </select>

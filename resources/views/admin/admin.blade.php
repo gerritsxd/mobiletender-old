@@ -15,6 +15,13 @@
             <section>
                 <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('Operación') }}</h2>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <a href="{{ url('/kitchen') }}" class="card-tw group border-l-4 border-l-brand transition hover:shadow-md">
+                        <div class="card-tw-body">
+                            <p class="font-semibold text-slate-900">{{ __('Cocina (iPad)') }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ __('Comandas: por hacer, en marcha y listo') }}</p>
+                            <span class="mt-4 inline-flex text-sm font-medium text-brand-dark group-hover:underline">{{ __('Abrir') }} →</span>
+                        </div>
+                    </a>
                     <a href="{{ url('/timereport') }}" class="card-tw group transition hover:shadow-md">
                         <div class="card-tw-body">
                             <p class="font-semibold text-slate-900">{{ __('Marcar Entradad o Salida') }}</p>

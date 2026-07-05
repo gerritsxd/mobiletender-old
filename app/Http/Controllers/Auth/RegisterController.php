@@ -74,8 +74,8 @@ class RegisterController extends Controller
         // 'type' is not mass-assignable, so set it explicitly.
         $role = (string) config('customoptions.register_default_role', '');
         $valid = [
-            User::EMPLOYEE_TYPE, User::WAITER_TYPE, User::MANAGER_TYPE,
-            User::FINANCE_TYPE, User::ADMIN_TYPE,
+            User::EMPLOYEE_TYPE, User::KITCHEN_TYPE, User::WAITER_TYPE,
+            User::MANAGER_TYPE, User::FINANCE_TYPE, User::ADMIN_TYPE,
         ];
         if (in_array($role, $valid, true)) {
             $user->forceFill(['type' => $role])->save();
