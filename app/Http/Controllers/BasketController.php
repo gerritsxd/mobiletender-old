@@ -166,18 +166,33 @@ class BasketController extends Controller
             'sent_at' => \Carbon\Carbon::now(),
         ]);
 
+        // Aggregate identical products into one item (with quantity), so the
+        // kitchen sees "3× Fries" as a single ticket it can mark ready at once,
+        // while different dishes stay separate items tracked individually.
+        $groups = [];
         foreach ($printedLines as $line) {
             $printto = data_get($line, 'attributes.product.printto');
             if ($printto === null) {
                 $printto = data_get($line, 'attributes.product.printer');
             }
-            \App\Models\KitchenOrderLine::create([
-                'kitchen_order_id' => $order->id,
-                'product_id' => data_get($line, 'productid'),
-                'product_name' => data_get($line, 'attributes.product.name', '?'),
-                'price' => (float) data_get($line, 'price', 0),
-                'printto' => $printto !== null ? (string) $printto : null,
-            ]);
+            $productId = data_get($line, 'productid');
+            $key = $productId . '|' . (string) $printto;
+            if (!isset($groups[$key])) {
+                $groups[$key] = [
+                    'kitchen_order_id' => $order->id,
+                    'product_id' => $productId,
+                    'product_name' => data_get($line, 'attributes.product.name', '?'),
+                    'printto' => $printto !== null ? (string) $printto : null,
+                    'quantity' => 0,
+                    'price' => 0.0,
+                    'status' => \App\Models\KitchenOrderLine::STATUS_PENDING,
+                ];
+            }
+            $groups[$key]['quantity']++;
+            $groups[$key]['price'] += (float) data_get($line, 'price', 0);
+        }
+        foreach ($groups as $g) {
+            \App\Models\KitchenOrderLine::create($g);
         }
     }
 

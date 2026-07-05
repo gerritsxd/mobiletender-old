@@ -326,17 +326,42 @@ parameters:
 			path: app/Http/Controllers/FlashOfferController.php
 
 		-
-			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:findOrFail\\(\\)\\.$#"
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 4
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$order\\.$#"
+			count: 6
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$printto\\.$#"
 			count: 1
 			path: app/Http/Controllers/KitchenController.php
 
 		-
-			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:where\\(\\)\\.$#"
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$product_name\\.$#"
+			count: 5
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$quantity\\.$#"
+			count: 2
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$started_at\\.$#"
 			count: 1
 			path: app/Http/Controllers/KitchenController.php
 
 		-
-			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrder\\:\\:whereIn\\(\\)\\.$#"
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$status\\.$#"
+			count: 3
+			path: app/Http/Controllers/KitchenController.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\KitchenOrderLine\\:\\:findOrFail\\(\\)\\.$#"
 			count: 1
 			path: app/Http/Controllers/KitchenController.php
 

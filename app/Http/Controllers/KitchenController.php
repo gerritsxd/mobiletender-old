@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KitchenOrder;
+use App\Models\KitchenOrderLine;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -28,110 +28,113 @@ class KitchenController extends Controller
     }
 
     /**
-     * Polled by the kitchen iPad. Oldest first — that IS the cooking order.
-     * Only lines routed to the kitchen printer(s) are shown.
+     * Polled by the kitchen iPad. Returns:
+     *  - overview: the aggregate prep list (total still to cook, per product)
+     *  - items: each dish as its own ticket, tracked individually (TODO/DOING/DONE)
+     * Only lines routed to the kitchen printer(s) are included.
      */
     public function ordersJson()
     {
         $kitchenPrinters = $this->kitchenPrinters();
 
-        $orders = KitchenOrder::with('lines')
-            ->where('status', '!=', KitchenOrder::STATUS_DELIVERED)
-            ->where('sent_at', '>=', Carbon::now()->subHours(12))
-            ->orderBy('sent_at')
-            ->get();
+        $lines = KitchenOrderLine::with('order')
+            ->where('status', '!=', KitchenOrderLine::STATUS_DELIVERED)
+            ->whereHas('order', fn ($q) => $q->where('sent_at', '>=', Carbon::now()->subHours(12)))
+            ->get()
+            ->filter(fn ($l) => in_array((string) $l->printto, $kitchenPrinters, true))
+            ->sortBy(fn ($l) => optional($l->order)->sent_at . '|' . $l->id)
+            ->values();
 
         $now = Carbon::now();
-        $out = [];
+        $items = [];
+        $overview = [];
 
-        foreach ($orders as $order) {
-            // Keep only the lines this kitchen is responsible for.
-            $kitchenLines = $order->lines->filter(function ($line) use ($kitchenPrinters) {
-                return in_array((string) $line->printto, $kitchenPrinters, true);
-            });
-            if ($kitchenLines->isEmpty()) {
-                continue; // all drinks / bar — not a kitchen ticket
-            }
+        foreach ($lines as $l) {
+            $sentAt = optional($l->order)->sent_at ?? $now;
+            $stageSince = $l->status === KitchenOrderLine::STATUS_PREPARING && $l->started_at
+                ? $l->started_at
+                : $sentAt;
 
-            $grouped = [];
-            foreach ($kitchenLines as $line) {
-                $key = $line->product_name;
-                if (!isset($grouped[$key])) {
-                    $grouped[$key] = ['name' => $line->product_name, 'qty' => 0];
-                }
-                $grouped[$key]['qty']++;
-            }
-
-            $stageSince = $order->status === KitchenOrder::STATUS_PREPARING && $order->started_at
-                ? $order->started_at
-                : $order->sent_at;
-
-            $out[] = [
-                'id' => $order->id,
-                'table' => $order->table_number,
-                'ordered_by' => $order->ordered_by,
-                'status' => $order->status,
-                'sent_at' => $order->sent_at->toIso8601String(),
-                'elapsed_s' => max(0, $order->sent_at->diffInSeconds($now)),
+            $items[] = [
+                'id' => $l->id,
+                'table' => optional($l->order)->table_number,
+                'ordered_by' => optional($l->order)->ordered_by,
+                'product' => $l->product_name,
+                'qty' => (int) $l->quantity,
+                'status' => $l->status,
+                'elapsed_s' => max(0, Carbon::parse($sentAt)->diffInSeconds($now)),
                 'stage_s' => max(0, Carbon::parse($stageSince)->diffInSeconds($now)),
-                'lines' => array_values($grouped),
             ];
+
+            // Overview counts everything not yet ready (still to cook).
+            if (in_array($l->status, [KitchenOrderLine::STATUS_PENDING, KitchenOrderLine::STATUS_PREPARING], true)) {
+                $overview[$l->product_name] = ($overview[$l->product_name] ?? 0) + (int) $l->quantity;
+            }
         }
 
-        return response()->json(['now' => $now->toIso8601String(), 'orders' => $out]);
+        arsort($overview);
+        $overviewList = [];
+        foreach ($overview as $name => $qty) {
+            $overviewList[] = ['product' => $name, 'qty' => $qty];
+        }
+
+        return response()->json([
+            'now' => $now->toIso8601String(),
+            'overview' => $overviewList,
+            'items' => $items,
+        ]);
     }
 
-    public function setStatus(Request $request, $id)
+    public function setLineStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|in:pending,preparing,ready,delivered',
         ]);
 
-        $order = KitchenOrder::findOrFail($id);
-        $order->status = $request->input('status');
-        if ($order->status === KitchenOrder::STATUS_PREPARING && !$order->started_at) {
-            $order->started_at = Carbon::now();
+        $line = KitchenOrderLine::findOrFail($id);
+        $line->status = $request->input('status');
+        if ($line->status === KitchenOrderLine::STATUS_PREPARING && !$line->started_at) {
+            $line->started_at = Carbon::now();
         }
-        if ($order->status === KitchenOrder::STATUS_READY && !$order->ready_at) {
-            $order->ready_at = Carbon::now();
+        if ($line->status === KitchenOrderLine::STATUS_READY && !$line->ready_at) {
+            $line->ready_at = Carbon::now();
         }
-        if ($order->status === KitchenOrder::STATUS_DELIVERED && !$order->delivered_at) {
-            $order->delivered_at = Carbon::now();
+        if ($line->status === KitchenOrderLine::STATUS_DELIVERED && !$line->delivered_at) {
+            $line->delivered_at = Carbon::now();
         }
-        $order->save();
+        $line->save();
 
-        return response()->json(['ok' => true, 'status' => $order->status]);
+        return response()->json(['ok' => true, 'status' => $line->status]);
     }
 
     /**
-     * Polled by each logged-in waiter's device: orders they sent that just
-     * became ready and haven't been delivered — for the "your order is ready"
-     * notification.
+     * Polled by each waiter's device: their items that just became ready (per
+     * dish — they don't all leave the pass together), not yet delivered.
      */
     public function readyForMe(Request $request)
     {
         $name = auth()->user()->name ?? null;
         if (!$name) {
-            return response()->json(['orders' => []]);
+            return response()->json(['items' => []]);
         }
 
-        $orders = KitchenOrder::where('ordered_by', $name)
-            ->where('status', KitchenOrder::STATUS_READY)
+        $items = KitchenOrderLine::with('order')
+            ->where('status', KitchenOrderLine::STATUS_READY)
             ->where('ready_at', '>=', Carbon::now()->subHours(2))
-            ->orderBy('ready_at', 'desc')
-            ->get(['id', 'table_number', 'ready_at']);
+            ->whereHas('order', fn ($q) => $q->where('ordered_by', $name))
+            ->get()
+            ->map(fn ($l) => [
+                'id' => $l->id,
+                'table' => optional($l->order)->table_number,
+                'product' => $l->product_name,
+            ])->values();
 
-        return response()->json([
-            'orders' => $orders->map(fn ($o) => [
-                'id' => $o->id,
-                'table' => $o->table_number,
-            ])->values()->all(),
-        ]);
+        return response()->json(['items' => $items]);
     }
 
     /**
-     * Polled by the customer's phone (session-based, no auth): ready orders
-     * for their own table/ticket — for the "your order is on its way" popup.
+     * Polled by the customer's phone (session-based): their own dishes that are
+     * ready — for the "your dish is on its way" popup, per item.
      */
     public function clientOrderStatus()
     {
@@ -141,20 +144,20 @@ class KitchenController extends Controller
         ], fn ($v) => $v !== '')));
 
         if (empty($ids)) {
-            return response()->json(['orders' => []]);
+            return response()->json(['items' => []]);
         }
 
-        $orders = KitchenOrder::whereIn('table_number', $ids)
-            ->where('status', KitchenOrder::STATUS_READY)
+        $items = KitchenOrderLine::with('order')
+            ->where('status', KitchenOrderLine::STATUS_READY)
             ->where('ready_at', '>=', Carbon::now()->subHour())
-            ->orderBy('ready_at', 'desc')
-            ->get(['id', 'table_number']);
+            ->whereHas('order', fn ($q) => $q->whereIn('table_number', $ids))
+            ->get()
+            ->map(fn ($l) => [
+                'id' => $l->id,
+                'table' => optional($l->order)->table_number,
+                'product' => $l->product_name,
+            ])->values();
 
-        return response()->json([
-            'orders' => $orders->map(fn ($o) => [
-                'id' => $o->id,
-                'table' => $o->table_number,
-            ])->values()->all(),
-        ]);
+        return response()->json(['items' => $items]);
     }
 }

@@ -18,6 +18,16 @@
     <a href="{{ route('admin') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 no-underline">{{ __('Salir') }}</a>
 </header>
 
+{{-- Aggregate prep list: total still to cook, across all tables --}}
+<section class="border-b border-slate-800 bg-slate-900/60 px-3 py-3" aria-label="{{ __('Por preparar (total)') }}">
+    <div class="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+        <x-icon name="list" class="h-4 w-4" /> {{ __('Por preparar — total') }}
+    </div>
+    <div id="kds-overview" class="flex flex-wrap gap-2">
+        <span class="text-sm text-slate-500">{{ __('Sin nada en cocina.') }}</span>
+    </div>
+</section>
+
 <main class="grid gap-3 p-3 md:grid-cols-3">
     {{-- TODO --}}
     <section class="flex flex-col rounded-xl bg-slate-900/40 p-2" aria-label="{{ __('Por hacer') }}">

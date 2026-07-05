@@ -1,10 +1,11 @@
 import $ from 'jquery';
 
 /**
- * Kitchen Display System (/kitchen): three-column board.
- *   Por hacer (pending)  ->  En marcha (preparing)  ->  Listo (ready)
- * Oldest first in each column. Only kitchen-printer lines reach here
- * (filtered server-side). Marking "Listo" notifies the waiter who took it.
+ * Kitchen Display System (/kitchen).
+ *  - Overview strip: total still to cook, per product ("5 Atún Tomate").
+ *  - Three columns of INDIVIDUAL item tickets: Por hacer -> En marcha -> Listo.
+ * Each dish is tracked on its own and marked ready independently, because a
+ * table's dishes don't all leave the pass at the same time.
  */
 const POLL_MS = 8000;
 let knownIds = new Set();
@@ -54,7 +55,7 @@ function tableLabel(table) {
 function setStatus(id, status, $btn) {
     $btn.prop('disabled', true).css('opacity', 0.6);
     $.ajax({
-        url: '/kitchen/orders/' + id + '/status',
+        url: '/kitchen/lines/' + id + '/status',
         type: 'POST',
         data: { status: status },
         headers: { 'X-CSRF-TOKEN': csrf() },
@@ -63,8 +64,8 @@ function setStatus(id, status, $btn) {
     });
 }
 
-function renderCard(order) {
-    const status = order.status;
+function renderCard(item) {
+    const status = item.status;
     const isDone = status === 'ready';
     const isDoing = status === 'preparing';
 
@@ -74,49 +75,58 @@ function renderCard(order) {
     const $card = $('<div class="rounded-xl border ' + border + ' ' + bg + ' p-3"></div>');
 
     const $head = $('<div class="mb-2 flex items-center justify-between gap-2"></div>');
-    $head.append($('<span class="text-lg font-extrabold tracking-tight"></span>').text(tableLabel(order.table)));
     $head.append(
-        $('<span class="rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ' + elapsedClass(order.stage_s) + '"></span>')
-            .text(elapsedLabel(order.stage_s))
+        $('<span class="text-base font-extrabold tracking-tight"></span>')
+            .append($('<span class="text-amber-300"></span>').text(item.qty + '× '))
+            .append(document.createTextNode(item.product))
+    );
+    $head.append(
+        $('<span class="shrink-0 rounded-full px-2 py-1 text-xs font-bold tabular-nums ' + elapsedClass(item.stage_s) + '"></span>')
+            .text(elapsedLabel(item.stage_s))
     );
     $card.append($head);
 
-    const $list = $('<ul class="mb-3 space-y-1"></ul>');
-    order.lines.forEach(function (l) {
-        const $li = $('<li class="flex items-baseline gap-2 text-base"></li>');
-        $li.append($('<span class="font-bold tabular-nums text-amber-300"></span>').text(l.qty + '×'));
-        $li.append($('<span></span>').text(l.name));
-        $list.append($li);
-    });
-    $card.append($list);
+    $card.append(
+        $('<p class="mb-2 text-xs ' + (isDone ? 'font-semibold text-emerald-300' : 'text-slate-400') + '"></p>')
+            .text((isDone ? '→ ' : '') + tableLabel(item.table) + (item.ordered_by ? ' · ' + item.ordered_by : ''))
+    );
 
     if (isDone) {
-        // DONE: emphasise WHERE it goes + who takes it there.
-        $card.append(
-            $('<p class="mb-2 text-sm font-semibold text-emerald-300"></p>')
-                .text('→ ' + tableLabel(order.table) + (order.ordered_by ? ' · ' + order.ordered_by : ''))
-        );
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Entregado</button>');
-        $btn.on('click', function () { setStatus(order.id, 'delivered', $(this)); });
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-2.5 text-sm font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Entregado</button>');
+        $btn.on('click', function () { setStatus(item.id, 'delivered', $(this)); });
         $card.append($btn);
     } else if (isDoing) {
-        $card.append($('<p class="mb-2 text-xs text-slate-400"></p>').text('Pedido: ' + (order.ordered_by || 'Cliente')));
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-3 text-base font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Listo</button>');
-        $btn.on('click', function () { setStatus(order.id, 'ready', $(this)); });
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-emerald-500 py-2.5 text-sm font-bold uppercase tracking-wide text-emerald-950 active:scale-[0.98]">Listo</button>');
+        $btn.on('click', function () { setStatus(item.id, 'ready', $(this)); });
         $card.append($btn);
     } else {
-        // TODO
-        $card.append($('<p class="mb-2 text-xs text-slate-400"></p>').text('Pedido: ' + (order.ordered_by || 'Cliente')));
-        const $btn = $('<button type="button" class="w-full rounded-lg bg-amber-400 py-3 text-base font-bold uppercase tracking-wide text-amber-950 active:scale-[0.98]">Empezar</button>');
-        $btn.on('click', function () { setStatus(order.id, 'preparing', $(this)); });
+        const $btn = $('<button type="button" class="w-full rounded-lg bg-amber-400 py-2.5 text-sm font-bold uppercase tracking-wide text-amber-950 active:scale-[0.98]">Empezar</button>');
+        $btn.on('click', function () { setStatus(item.id, 'preparing', $(this)); });
         $card.append($btn);
     }
 
     return $card;
 }
 
+function renderOverview(overview) {
+    const $wrap = $('#kds-overview').empty();
+    if (!overview.length) {
+        $wrap.append('<span class="text-sm text-slate-500">Sin nada en cocina.</span>');
+        return;
+    }
+    overview.forEach(function (o) {
+        $wrap.append(
+            $('<span class="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5"></span>')
+                .append($('<span class="text-lg font-extrabold tabular-nums text-amber-300"></span>').text(o.qty))
+                .append($('<span class="text-sm font-semibold text-slate-100"></span>').text(o.product))
+        );
+    });
+}
+
 function render(data) {
-    const orders = (data && data.orders) || [];
+    renderOverview((data && data.overview) || []);
+
+    const items = (data && data.items) || [];
     const cols = {
         pending: $('#col-todo').empty(),
         preparing: $('#col-doing').empty(),
@@ -124,22 +134,21 @@ function render(data) {
     };
     const counts = { pending: 0, preparing: 0, ready: 0 };
 
-    orders.forEach(function (o) {
-        if (!cols[o.status]) return;
-        cols[o.status].append(renderCard(o));
-        counts[o.status]++;
+    items.forEach(function (it) {
+        if (!cols[it.status]) return;
+        cols[it.status].append(renderCard(it));
+        counts[it.status]++;
     });
 
     $('#count-todo').text(counts.pending);
     $('#count-doing').text(counts.preparing);
     $('#count-done').text(counts.ready);
 
-    // Chime on genuinely new tickets landing in TODO.
-    const incoming = orders.filter(function (o) { return o.status === 'pending' && !knownIds.has(o.id); });
+    const incoming = items.filter(function (it) { return it.status === 'pending' && !knownIds.has(it.id); });
     if (!firstLoad && incoming.length > 0) {
         beep();
     }
-    orders.forEach(function (o) { knownIds.add(o.id); });
+    items.forEach(function (it) { knownIds.add(it.id); });
     firstLoad = false;
 }
 

@@ -25,25 +25,35 @@ class KitchenTest extends TestCase
         return $user;
     }
 
-    private function makeKitchenOrder(string $status = 'pending'): KitchenOrder
+    /**
+     * @return array{0: KitchenOrder, 1: KitchenOrderLine}
+     */
+    private function makeKitchenItem(int $qty = 1, string $product = 'Tapa Test', string $printto = '2'): array
     {
         $order = KitchenOrder::create([
             'id' => Str::uuid()->toString(),
             'table_number' => '7',
             'ordered_by' => 'TestWaiter',
-            'status' => $status,
+            'status' => 'pending',
             'sent_at' => Carbon::now()->subMinutes(3),
         ]);
-        // printto 2 = kitchen station (config customoptions.kitchen_printers).
-        KitchenOrderLine::create([
+        $line = KitchenOrderLine::create([
             'kitchen_order_id' => $order->id,
             'product_id' => self::PRODUCT_ID,
-            'product_name' => 'Tapa Test',
-            'price' => 4.55,
-            'printto' => '2',
+            'product_name' => $product,
+            'quantity' => $qty,
+            'price' => 4.55 * $qty,
+            'printto' => $printto, // 2 = kitchen station
+            'status' => 'pending',
         ]);
 
-        return $order;
+        return [$order, $line];
+    }
+
+    private function cleanup(KitchenOrder $order): void
+    {
+        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
+        $order->delete();
     }
 
     public function test_kitchen_requires_employee_login(): void
@@ -52,137 +62,116 @@ class KitchenTest extends TestCase
         $this->get('/kitchen/orders.json')->assertRedirect();
     }
 
-    public function test_kitchen_shows_pending_orders_fifo_with_lines(): void
+    public function test_board_shows_items_and_aggregate_overview(): void
     {
         $user = $this->makeEmployee();
-        $order = $this->makeKitchenOrder();
+        [$o1, $l1] = $this->makeKitchenItem(2, 'Atún Tomate');
+        [$o2, $l2] = $this->makeKitchenItem(3, 'Fries');
 
         $response = $this->actingAs($user)->getJson('/kitchen/orders.json');
-
         $response->assertStatus(200);
-        $found = collect($response->json('orders'))->firstWhere('id', $order->id);
-        self::assertNotNull($found);
-        self::assertEquals('7', $found['table']);
-        self::assertEquals('TestWaiter', $found['ordered_by']);
-        self::assertEquals('pending', $found['status']);
-        self::assertEquals('Tapa Test', $found['lines'][0]['name']);
-        self::assertEquals(1, $found['lines'][0]['qty']);
-        self::assertGreaterThan(0, $found['elapsed_s']);
 
-        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
-        $order->delete();
+        // Individual item tickets.
+        $item = collect($response->json('items'))->firstWhere('id', $l1->id);
+        self::assertNotNull($item);
+        self::assertEquals('Atún Tomate', $item['product']);
+        self::assertEquals(2, $item['qty']);
+        self::assertEquals('7', $item['table']);
+        self::assertEquals('pending', $item['status']);
+
+        // Aggregate prep list.
+        $overview = collect($response->json('overview'));
+        self::assertEquals(2, $overview->firstWhere('product', 'Atún Tomate')['qty']);
+        self::assertEquals(3, $overview->firstWhere('product', 'Fries')['qty']);
+
+        $this->cleanup($o1);
+        $this->cleanup($o2);
         $user->delete();
     }
 
-    public function test_order_can_be_marked_ready_then_delivered_and_disappears(): void
+    public function test_each_item_marked_ready_independently(): void
     {
         $user = $this->makeEmployee();
-        $order = $this->makeKitchenOrder();
+        [$o1, $l1] = $this->makeKitchenItem(1, 'Atún Tomate');
+        [$o2, $l2] = $this->makeKitchenItem(1, 'Fries');
+        // same table, but separate items — they don't leave the pass together.
+        $o2->table_number = $o1->table_number;
+        $o2->save();
 
-        $this->actingAs($user)->withoutMiddleware(VerifyCsrfToken::class)
-            ->postJson('/kitchen/orders/' . $order->id . '/status', ['status' => 'ready'])
-            ->assertStatus(200)->assertJsonPath('status', 'ready');
+        $mark = fn ($id, $s) => $this->actingAs($user)->withoutMiddleware(VerifyCsrfToken::class)
+            ->postJson('/kitchen/lines/' . $id . '/status', ['status' => $s]);
 
-        $this->actingAs($user)->withoutMiddleware(VerifyCsrfToken::class)
-            ->postJson('/kitchen/orders/' . $order->id . '/status', ['status' => 'delivered'])
-            ->assertStatus(200)->assertJsonPath('status', 'delivered');
+        // Mark only the Atún ready; Fries stays cooking.
+        $mark($l1->id, 'ready')->assertStatus(200)->assertJsonPath('status', 'ready');
+        $l1->refresh();
+        $l2->refresh();
+        self::assertNotNull($l1->ready_at);
+        self::assertEquals('pending', $l2->status);
 
-        $response = $this->actingAs($user)->getJson('/kitchen/orders.json');
-        self::assertNull(collect($response->json('orders'))->firstWhere('id', $order->id));
+        // Board reflects one item in each of ready / pending.
+        $data = $this->actingAs($user)->getJson('/kitchen/orders.json')->json('items');
+        self::assertEquals('ready', collect($data)->firstWhere('id', $l1->id)['status']);
+        self::assertEquals('pending', collect($data)->firstWhere('id', $l2->id)['status']);
 
-        $order->refresh();
-        self::assertNotNull($order->ready_at);
-        self::assertNotNull($order->delivered_at);
-
-        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
-        $order->delete();
+        $this->cleanup($o1);
+        $this->cleanup($o2);
         $user->delete();
     }
 
-    public function test_bar_only_order_is_not_shown_on_kitchen_board(): void
+    public function test_bar_only_item_not_shown_on_kitchen_board(): void
     {
         $user = $this->makeEmployee();
-        $order = KitchenOrder::create([
-            'id' => Str::uuid()->toString(),
-            'table_number' => '9',
-            'ordered_by' => 'BarWaiter',
-            'status' => 'pending',
-            'sent_at' => Carbon::now()->subMinute(),
-        ]);
-        // printto 1 = bar, not the kitchen printer (2).
-        KitchenOrderLine::create([
-            'kitchen_order_id' => $order->id,
-            'product_id' => self::PRODUCT_ID,
-            'product_name' => 'Caña',
-            'price' => 2.0,
-            'printto' => '1',
-        ]);
+        [$order, $line] = $this->makeKitchenItem(1, 'Caña', '1'); // printto 1 = bar
 
-        $response = $this->actingAs($user)->getJson('/kitchen/orders.json');
-        self::assertNull(collect($response->json('orders'))->firstWhere('id', $order->id));
+        $items = $this->actingAs($user)->getJson('/kitchen/orders.json')->json('items');
+        self::assertNull(collect($items)->firstWhere('id', $line->id));
 
-        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
-        $order->delete();
+        $this->cleanup($order);
         $user->delete();
     }
 
-    public function test_todo_doing_done_flow_and_waiter_notification(): void
+    public function test_waiter_notified_per_ready_item(): void
     {
         $user = $this->makeEmployee();
-        $order = $this->makeKitchenOrder(); // ordered_by = TestWaiter
+        [$order, $line] = $this->makeKitchenItem(1, 'Atún Tomate'); // ordered_by TestWaiter
+        $line->status = 'ready';
+        $line->ready_at = Carbon::now();
+        $line->save();
 
-        // TODO -> DOING
-        $this->actingAs($user)->withoutMiddleware(VerifyCsrfToken::class)
-            ->postJson('/kitchen/orders/' . $order->id . '/status', ['status' => 'preparing'])
-            ->assertStatus(200)->assertJsonPath('status', 'preparing');
-        $order->refresh();
-        self::assertNotNull($order->started_at);
-
-        // DOING -> READY
-        $this->actingAs($user)->withoutMiddleware(VerifyCsrfToken::class)
-            ->postJson('/kitchen/orders/' . $order->id . '/status', ['status' => 'ready'])
-            ->assertStatus(200);
-
-        // The waiter who took it (TestWaiter) should be notified.
         $waiter = $this->makeEmployee();
         $waiter->name = 'TestWaiter';
         $waiter->save();
         $ready = $this->actingAs($waiter)->getJson('/kitchen/ready-for-me.json');
         $ready->assertStatus(200);
-        self::assertEquals('7', $ready->json('orders.0.table'));
+        self::assertEquals('Atún Tomate', $ready->json('items.0.product'));
+        self::assertEquals('7', $ready->json('items.0.table'));
 
-        // A different waiter is NOT notified.
         $other = $this->makeEmployee();
-        $otherReady = $this->actingAs($other)->getJson('/kitchen/ready-for-me.json');
-        self::assertCount(0, $otherReady->json('orders'));
+        self::assertCount(0, $this->actingAs($other)->getJson('/kitchen/ready-for-me.json')->json('items'));
 
-        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
-        $order->delete();
+        $this->cleanup($order);
         $user->delete();
         $waiter->delete();
         $other->delete();
     }
 
-    public function test_client_sees_own_table_ready_order(): void
+    public function test_client_sees_own_table_ready_item(): void
     {
-        $order = $this->makeKitchenOrder(); // table 7
-        $order->status = 'ready';
-        $order->ready_at = Carbon::now();
-        $order->save();
+        [$order, $line] = $this->makeKitchenItem(1, 'Atún Tomate'); // table 7
+        $line->status = 'ready';
+        $line->ready_at = Carbon::now();
+        $line->save();
 
-        // Customer whose session is on table 7 sees it.
         $response = $this->withSession(['ticketID' => '7', 'tableNumber' => '7'])
             ->getJson('/order/ready-status.json');
         $response->assertStatus(200);
-        self::assertEquals('7', $response->json('orders.0.table'));
+        self::assertEquals('Atún Tomate', $response->json('items.0.product'));
 
-        // Customer on a different table does not.
         $other = $this->withSession(['ticketID' => '99', 'tableNumber' => '99'])
             ->getJson('/order/ready-status.json');
-        self::assertCount(0, $other->json('orders'));
+        self::assertCount(0, $other->json('items'));
 
-        KitchenOrderLine::where('kitchen_order_id', $order->id)->delete();
-        $order->delete();
+        $this->cleanup($order);
     }
 
     public function test_waiterstats_requires_manager(): void

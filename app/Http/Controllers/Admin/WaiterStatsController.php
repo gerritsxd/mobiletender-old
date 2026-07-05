@@ -25,7 +25,7 @@ class WaiterStatsController extends Controller
         $sold = DB::select(
             'SELECT ko.ordered_by AS person,
                     COUNT(DISTINCT ko.id) AS orders_count,
-                    COUNT(kol.id) AS lines_count,
+                    COALESCE(SUM(kol.quantity), 0) AS lines_count,
                     COALESCE(SUM(kol.price), 0) AS net
              FROM kitchen_orders ko
              JOIN kitchen_order_lines kol ON kol.kitchen_order_id = ko.id
