@@ -3,7 +3,15 @@
 @section('title', __('Register') . ' — ' . config('app.name'))
 
 @section('content')
-    <h2 class="mb-6 text-center text-xl font-semibold text-slate-900">{{ __('Register') }}</h2>
+    <h2 class="mb-2 text-center text-xl font-semibold text-slate-900">{{ __('Register') }}</h2>
+    @php $grantRole = (string) config('customoptions.register_default_role', ''); @endphp
+    @if ($grantRole !== '')
+        <p class="mb-6 rounded-lg border border-brand/40 bg-brand-light px-3 py-2 text-center text-sm text-sea">
+            {{ __('Entorno de pruebas: tu cuenta tendrá acceso de') }} <b>{{ $grantRole }}</b> {{ __('para probar la app.') }}
+        </p>
+    @else
+        <div class="mb-6"></div>
+    @endif
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
         <div>
@@ -27,4 +35,9 @@
         </div>
         <button type="submit" class="btn-primary w-full">{{ __('Register') }}</button>
     </form>
+
+    <p class="mt-6 text-center text-sm text-slate-600">
+        {{ __('¿Ya tienes cuenta?') }}
+        <a class="font-semibold text-brand-dark hover:underline" href="{{ route('login') }}">{{ __('Inicia sesión') }}</a>
+    </p>
 @endsection

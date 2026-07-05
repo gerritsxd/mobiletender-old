@@ -31,4 +31,11 @@
             @endif
         </div>
     </form>
+
+    @if (Route::has('register'))
+        <p class="mt-6 text-center text-sm text-slate-600">
+            {{ __('¿No tienes cuenta?') }}
+            <a class="font-semibold text-brand-dark hover:underline" href="{{ route('register') }}">{{ __('Regístrate') }}</a>
+        </p>
+    @endif
 @endsection

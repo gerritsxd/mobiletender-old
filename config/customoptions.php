@@ -35,4 +35,9 @@ return [
     // printer are the ones cooked in the kitchen). Comma-separated for several.
     'kitchen_printers' => env('KITCHEN_PRINTERS', '2'),
 
+    // Role granted to self-registered users. On non-production (test/staging)
+    // this defaults to 'manager' so employees can register and test features;
+    // on production it is empty (no access) unless REGISTER_DEFAULT_ROLE is set.
+    'register_default_role' => env('REGISTER_DEFAULT_ROLE', env('APP_ENV') === 'production' ? '' : 'manager'),
+
     ];

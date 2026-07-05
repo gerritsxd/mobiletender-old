@@ -64,10 +64,23 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+
+        // Grant a starting role on test/staging so employees can test features.
+        // 'type' is not mass-assignable, so set it explicitly.
+        $role = (string) config('customoptions.register_default_role', '');
+        $valid = [
+            User::EMPLOYEE_TYPE, User::WAITER_TYPE, User::MANAGER_TYPE,
+            User::FINANCE_TYPE, User::ADMIN_TYPE,
+        ];
+        if (in_array($role, $valid, true)) {
+            $user->forceFill(['type' => $role])->save();
+        }
+
+        return $user;
     }
 }
