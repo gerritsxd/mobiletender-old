@@ -42,14 +42,71 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">{{ __('Producto (opcional)') }}</label>
-                        <select name="product_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-brand focus:outline-none">
-                            <option value="">{{ __('— Solo anuncio, sin producto —') }}</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}" @selected(old('product_id') === $product->id)>
-                                    {{ $product->name }} (@money($product->pricesell * 1.1))
-                                </option>
-                            @endforeach
-                        </select>
+                        @php
+                            $productsForJs = $products->map(fn ($p) => [
+                                'id' => (string) $p->id,
+                                'name' => $p->name,
+                                'price' => round((float) $p->pricesell * 1.1, 2),
+                            ])->values();
+                        @endphp
+                        <div
+                            x-data="{
+                                open: false,
+                                query: '',
+                                selectedId: {{ \Illuminate\Support\Js::from(old('product_id', '')) }},
+                                products: {{ \Illuminate\Support\Js::from($productsForJs) }},
+                                norm(s) { return (s || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); },
+                                get filtered() {
+                                    if (!this.query) return this.products.slice(0, 60);
+                                    const q = this.norm(this.query);
+                                    return this.products.filter(p => this.norm(p.name).includes(q)).slice(0, 60);
+                                },
+                                get selectedLabel() {
+                                    const p = this.products.find(x => x.id === this.selectedId);
+                                    return p ? p.name + ' (' + p.price.toFixed(2) + '€)' : '';
+                                },
+                                choose(p) { this.selectedId = p.id; this.query = ''; this.open = false; },
+                                clear() { this.selectedId = ''; this.query = ''; },
+                            }"
+                            class="relative"
+                            x-cloak
+                        >
+                            <input type="hidden" name="product_id" :value="selectedId">
+
+                            {{-- Selected product chip --}}
+                            <div x-show="selectedId" class="flex items-center justify-between gap-2 rounded-lg border border-brand bg-brand-light px-3 py-2">
+                                <span class="text-sm font-medium text-sea" x-text="selectedLabel"></span>
+                                <button type="button" @click="clear()" class="shrink-0 rounded-full p-1 text-sea-soft hover:bg-brand-dark/20" aria-label="{{ __('Quitar producto') }}">✕</button>
+                            </div>
+
+                            {{-- Search box + results --}}
+                            <div x-show="!selectedId">
+                                <div class="relative">
+                                    <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+                                    </svg>
+                                    <input type="text" x-model="query" @focus="open = true"
+                                           placeholder="{{ __('Buscar producto…') }}"
+                                           class="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 focus:border-brand focus:outline-none"
+                                           autocomplete="off">
+                                </div>
+                                <ul x-show="open" @click.away="open = false"
+                                    class="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                    <template x-if="filtered.length === 0">
+                                        <li class="px-3 py-2 text-sm text-slate-400">{{ __('Sin resultados') }}</li>
+                                    </template>
+                                    <template x-for="p in filtered" :key="p.id">
+                                        <li>
+                                            <button type="button" @click="choose(p)"
+                                                    class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-slate-50">
+                                                <span class="text-slate-800" x-text="p.name"></span>
+                                                <span class="shrink-0 tabular-nums text-slate-500" x-text="p.price.toFixed(2) + '€'"></span>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
                         <p class="mt-1 text-xs text-slate-500">{{ __('Con producto, el cliente puede añadirlo al pedido con un toque.') }}</p>
                     </div>
                     <div>
