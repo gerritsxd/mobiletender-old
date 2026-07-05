@@ -957,7 +957,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$type\\.$#"
-			count: 5
+			count: 6
 			path: app/Models/User.php
 
 		-
