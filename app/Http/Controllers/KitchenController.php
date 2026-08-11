@@ -9,21 +9,44 @@ use Illuminate\Support\Facades\Session;
 
 class KitchenController extends Controller
 {
-    public function index()
+    public function index($station = 'cocina')
     {
-        return view('kitchen.index');
+        $cfg = $this->stationConfig($station);
+        abort_unless($cfg, 404);
+
+        $feedUrl = $station === 'cocina'
+            ? route('kitchen.orders')
+            : url('/' . $station . '/orders.json');
+
+        return view('station.index', [
+            'station' => $station,
+            'label' => $cfg['label'] ?? ucfirst($station),
+            'feedUrl' => $feedUrl,
+            'statusBase' => url('/kitchen/lines'),
+        ]);
     }
 
     /**
-     * Printer numbers the kitchen cooks for (config customoptions.kitchen_printers).
+     * @return array<string, mixed>|null
+     */
+    private function stationConfig(string $station): ?array
+    {
+        return config('customoptions.stations.' . $station);
+    }
+
+    /**
+     * Printer numbers a given station serves.
      *
      * @return array<int, string>
      */
-    private function kitchenPrinters(): array
+    private function stationPrinters(string $station): array
     {
+        $cfg = $this->stationConfig($station);
+        $printers = $cfg['printers'] ?? config('customoptions.kitchen_printers', '2');
+
         return array_values(array_filter(array_map(
             'trim',
-            explode(',', (string) config('customoptions.kitchen_printers', '2'))
+            explode(',', (string) $printers)
         ), fn ($v) => $v !== ''));
     }
 
@@ -33,9 +56,9 @@ class KitchenController extends Controller
      *  - items: each dish as its own ticket, tracked individually (TODO/DOING/DONE)
      * Only lines routed to the kitchen printer(s) are included.
      */
-    public function ordersJson()
+    public function ordersJson($station = 'cocina')
     {
-        $kitchenPrinters = $this->kitchenPrinters();
+        $kitchenPrinters = $this->stationPrinters($station);
 
         $lines = KitchenOrderLine::with('order')
             ->where('status', '!=', KitchenOrderLine::STATUS_DELIVERED)

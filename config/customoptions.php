@@ -35,6 +35,14 @@ return [
     // printer are the ones cooked in the kitchen). Comma-separated for several.
     'kitchen_printers' => env('KITCHEN_PRINTERS', '2'),
 
+    // Station displays (kitchen-style boards), each filtered to its printer(s).
+    // 'label' is the on-screen name; 'printers' is comma-separated printto value(s).
+    'stations' => [
+        'cocina' => ['label' => 'Cocina', 'printers' => env('KITCHEN_PRINTERS', '2')],
+        'bar' => ['label' => 'Bar', 'printers' => env('BAR_PRINTERS', '1')],
+        'cocktails' => ['label' => 'Cocktails', 'printers' => env('COCKTAIL_PRINTERS', '3')],
+    ],
+
     // Role granted to self-registered users. On non-production (test/staging)
     // this defaults to 'manager' so employees can register and test features;
     // on production it is empty (no access) unless REGISTER_DEFAULT_ROLE is set.

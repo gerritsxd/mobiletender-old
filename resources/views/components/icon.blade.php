@@ -18,6 +18,8 @@
         'arrow-right' => '<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>',
         'sparkles' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>',
         'chef' => '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18.75h12M7.5 18.75V13.5m9 5.25V13.5M6.75 13.5a3.75 3.75 0 01-1.5-7.186A3.75 3.75 0 0112 4.5a3.75 3.75 0 016.75 1.814 3.75 3.75 0 01-1.5 7.186h-10.5z"/>',
+        'cup' => '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 3.75h13.5l-1.2 12a2.25 2.25 0 01-2.24 2.02H7.94A2.25 2.25 0 015.7 15.75L4.5 3.75zm.6 4.5h12.3M9 18v2.25m6-2.25V20.25M8.25 20.25h7.5"/>',
+        'cocktail' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5h16.5L12 13.5 3.75 4.5zm8.25 9v6.75m-3.75 0h7.5M6 4.5l1.5-1.5h9L18 4.5"/>',
     ];
     $d = $paths[$name] ?? '';
 @endphp

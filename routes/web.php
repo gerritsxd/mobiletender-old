@@ -170,9 +170,15 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/orderslog', [App\Http\Controllers\Admin\OrdersLogController::class, 'index'])->middleware('is_manager')->name('orderslog');
     Route::get('/orderslog/feed.json', [App\Http\Controllers\Admin\OrdersLogController::class, 'feed'])->middleware('is_manager')->name('orderslog.feed');
 
-    // Kitchen display (iPad)
-    Route::get('/kitchen', [App\Http\Controllers\KitchenController::class, 'index'])->middleware('is_employee')->name('kitchen');
-    Route::get('/kitchen/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->middleware('is_employee')->name('kitchen.orders');
+    // Station displays (iPad): kitchen / bar / cocktails — same board, each
+    // filtered to its printer(s) (config customoptions.stations).
+    Route::get('/kitchen', [App\Http\Controllers\KitchenController::class, 'index'])->defaults('station', 'cocina')->middleware('is_employee')->name('kitchen');
+    Route::get('/kitchen/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->defaults('station', 'cocina')->middleware('is_employee')->name('kitchen.orders');
+    Route::get('/bar', [App\Http\Controllers\KitchenController::class, 'index'])->defaults('station', 'bar')->middleware('is_employee')->name('station.bar');
+    Route::get('/bar/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->defaults('station', 'bar')->middleware('is_employee');
+    Route::get('/cocktails', [App\Http\Controllers\KitchenController::class, 'index'])->defaults('station', 'cocktails')->middleware('is_employee')->name('station.cocktails');
+    Route::get('/cocktails/orders.json', [App\Http\Controllers\KitchenController::class, 'ordersJson'])->defaults('station', 'cocktails')->middleware('is_employee');
+
     Route::get('/kitchen/ready-for-me.json', [App\Http\Controllers\KitchenController::class, 'readyForMe'])->middleware('is_employee')->name('kitchen.readyForMe');
     Route::post('/kitchen/lines/{id}/status', [App\Http\Controllers\KitchenController::class, 'setLineStatus'])->middleware('is_employee')->name('kitchen.lineStatus');
 

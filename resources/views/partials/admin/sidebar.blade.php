@@ -3,6 +3,8 @@
     if (Auth::user()->isEmployee()) {
         $nav[] = ['label' => __('Marcar Entrada o Salida'), 'href' => url('/timereport'), 'section' => __('Operación')];
         $nav[] = ['label' => __('Cocina (iPad)'), 'href' => url('/kitchen'), 'section' => __('Operación')];
+        $nav[] = ['label' => __('Barra (iPad)'), 'href' => url('/bar'), 'section' => __('Operación')];
+        $nav[] = ['label' => __('Cocktails (iPad)'), 'href' => url('/cocktails'), 'section' => __('Operación')];
     }
     if (Auth::user()->isWaiter()) {
         $nav[] = ['label' => __('Seleccionar mesa'), 'href' => url('/selecttable'), 'section' => __('Operación')];

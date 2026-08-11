@@ -41,10 +41,18 @@ function tableLabel(table) {
     return 'MESA ' + table;
 }
 
+function statusBase() {
+    return $('body').data('status-base') || '/kitchen/lines';
+}
+
+function feedUrl() {
+    return $('body').data('feed') || '/kitchen/orders.json';
+}
+
 function setStatus(id, status, $btn) {
     $btn.prop('disabled', true).css('opacity', 0.6);
     $.ajax({
-        url: '/kitchen/lines/' + id + '/status',
+        url: statusBase() + '/' + id + '/status',
         type: 'POST',
         data: { status: status },
         headers: { 'X-CSRF-TOKEN': csrf() },
@@ -142,7 +150,7 @@ function render(data) {
 }
 
 function refresh() {
-    $.getJSON('/kitchen/orders.json').done(render);
+    $.getJSON(feedUrl()).done(render);
 }
 
 function markSoundOn() {
@@ -153,9 +161,9 @@ function markSoundOn() {
 }
 
 $(function () {
-    if ($('body').data('page') !== 'kitchen') return;
+    if ($('body').data('page') !== 'station') return;
 
-    // The kitchen screen is passive, so make enabling sound explicit: one tap
+    // The station screen is passive, so make enabling sound explicit: one tap
     // unlocks audio + a test chime for the whole shift.
     $('#kds-sound-toggle').on('click', function () {
         if (window.mtAlerts) {

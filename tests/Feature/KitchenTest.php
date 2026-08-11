@@ -130,6 +130,31 @@ class KitchenTest extends TestCase
         $user->delete();
     }
 
+    public function test_bar_and_cocktails_stations_filter_to_their_printers(): void
+    {
+        $user = $this->makeEmployee();
+        [$oK, $lK] = $this->makeKitchenItem(1, 'Tapa', '2');    // cocina (2)
+        [$oB, $lB] = $this->makeKitchenItem(1, 'Caña', '1');    // bar (1)
+        [$oC, $lC] = $this->makeKitchenItem(1, 'Mojito', '3');  // cocktails (3)
+
+        $bar = $this->actingAs($user)->getJson('/bar/orders.json')->json('items');
+        self::assertNotNull(collect($bar)->firstWhere('id', $lB->id));
+        self::assertNull(collect($bar)->firstWhere('id', $lK->id));
+        self::assertNull(collect($bar)->firstWhere('id', $lC->id));
+
+        $cocktails = $this->actingAs($user)->getJson('/cocktails/orders.json')->json('items');
+        self::assertNotNull(collect($cocktails)->firstWhere('id', $lC->id));
+        self::assertNull(collect($cocktails)->firstWhere('id', $lB->id));
+
+        $this->actingAs($user)->get('/bar')->assertStatus(200);
+        $this->actingAs($user)->get('/cocktails')->assertStatus(200);
+
+        $this->cleanup($oK);
+        $this->cleanup($oB);
+        $this->cleanup($oC);
+        $user->delete();
+    }
+
     public function test_waiter_notified_per_ready_item(): void
     {
         $user = $this->makeEmployee();

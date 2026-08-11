@@ -22,6 +22,20 @@
                             <span class="mt-4 inline-flex text-sm font-medium text-brand-dark group-hover:underline">{{ __('Abrir') }} →</span>
                         </div>
                     </a>
+                    <a href="{{ url('/bar') }}" class="card-tw group border-l-4 border-l-teal transition hover:shadow-md">
+                        <div class="card-tw-body">
+                            <p class="font-semibold text-slate-900">{{ __('Barra (iPad)') }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ __('Comandas de la barra') }}</p>
+                            <span class="mt-4 inline-flex text-sm font-medium text-brand-dark group-hover:underline">{{ __('Abrir') }} →</span>
+                        </div>
+                    </a>
+                    <a href="{{ url('/cocktails') }}" class="card-tw group border-l-4 border-l-grape transition hover:shadow-md">
+                        <div class="card-tw-body">
+                            <p class="font-semibold text-slate-900">{{ __('Cocktails (iPad)') }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ __('Comandas de coctelería') }}</p>
+                            <span class="mt-4 inline-flex text-sm font-medium text-brand-dark group-hover:underline">{{ __('Abrir') }} →</span>
+                        </div>
+                    </a>
                     <a href="{{ url('/timereport') }}" class="card-tw group transition hover:shadow-md">
                         <div class="card-tw-body">
                             <p class="font-semibold text-slate-900">{{ __('Marcar Entradad o Salida') }}</p>

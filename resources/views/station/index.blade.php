@@ -1,18 +1,25 @@
+@php
+    $icon = ['cocina' => 'chef', 'bar' => 'cup', 'cocktails' => 'cocktail'][$station] ?? 'list';
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ __('Cocina') }} — {{ config('app.name') }}</title>
+    <title>{{ $label }} — {{ config('app.name') }}</title>
     @vite(['resources/css/main.css', 'resources/js/main.js'])
 </head>
-<body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased" data-page="kitchen">
+<body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased"
+      data-page="station"
+      data-station="{{ $station }}"
+      data-feed="{{ $feedUrl }}"
+      data-status-base="{{ $statusBase }}">
 
 <header class="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/95 px-4 py-3">
     <div class="flex items-center gap-3">
-        <x-icon name="chef" class="h-6 w-6 text-brand" />
-        <h1 class="text-xl font-bold">{{ __('Cocina') }}</h1>
+        <x-icon name="{{ $icon }}" class="h-6 w-6 text-brand" />
+        <h1 class="text-xl font-bold">{{ $label }}</h1>
         <span id="kds-clock" class="font-mono text-lg tabular-nums text-slate-400"></span>
     </div>
     <div class="flex items-center gap-2">
@@ -27,13 +34,13 @@
     </div>
 </header>
 
-{{-- Aggregate prep list: total still to cook, across all tables --}}
+{{-- Aggregate prep list: total still to prepare, across all tables --}}
 <section class="border-b border-slate-800 bg-slate-900/60 px-3 py-3" aria-label="{{ __('Por preparar (total)') }}">
     <div class="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
         <x-icon name="list" class="h-4 w-4" /> {{ __('Por preparar — total') }}
     </div>
     <div id="kds-overview" class="flex flex-wrap gap-2">
-        <span class="text-sm text-slate-500">{{ __('Sin nada en cocina.') }}</span>
+        <span class="text-sm text-slate-500">{{ __('Sin comandas.') }}</span>
     </div>
 </section>
 
